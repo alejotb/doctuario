@@ -1,0 +1,1749 @@
+Primera consulta:
+
+[
+  {
+    "tabla": "avales_medicos",
+    "columna": "id",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": "gen_random_uuid()"
+  },
+  {
+    "tabla": "avales_medicos",
+    "columna": "created_at",
+    "tipo": "timestamp with time zone",
+    "permite_null": "YES",
+    "valor_defecto": "now()"
+  },
+  {
+    "tabla": "avales_medicos",
+    "columna": "id_doctor_avalado",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "avales_medicos",
+    "columna": "id_doctor_avalador",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "avales_medicos",
+    "columna": "comentario",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "catalogo_doctores",
+    "columna": "id",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "catalogo_doctores",
+    "columna": "nombre",
+    "tipo": "text",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "catalogo_doctores",
+    "columna": "especialidad",
+    "tipo": "text",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "catalogo_doctores",
+    "columna": "subespecialidad",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "catalogo_doctores",
+    "columna": "biografia",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "catalogo_doctores",
+    "columna": "foto_url",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "catalogo_doctores",
+    "columna": "telefono",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "catalogo_doctores",
+    "columna": "precio_consulta",
+    "tipo": "numeric",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "catalogo_doctores",
+    "columna": "sedes_publicas",
+    "tipo": "jsonb",
+    "permite_null": "YES",
+    "valor_defecto": "'[]'::jsonb"
+  },
+  {
+    "tabla": "catalogo_doctores",
+    "columna": "dias_atencion",
+    "tipo": "ARRAY",
+    "permite_null": "YES",
+    "valor_defecto": "'{}'::integer[]"
+  },
+  {
+    "tabla": "catalogo_doctores",
+    "columna": "activo",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "true"
+  },
+  {
+    "tabla": "catalogo_doctores",
+    "columna": "rating",
+    "tipo": "numeric",
+    "permite_null": "YES",
+    "valor_defecto": "5.0"
+  },
+  {
+    "tabla": "catalogo_doctores",
+    "columna": "actualizado_el",
+    "tipo": "timestamp with time zone",
+    "permite_null": "NO",
+    "valor_defecto": "timezone('utc'::text, now())"
+  },
+  {
+    "tabla": "centros_medicos",
+    "columna": "id",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": "gen_random_uuid()"
+  },
+  {
+    "tabla": "centros_medicos",
+    "columna": "created_at",
+    "tipo": "timestamp with time zone",
+    "permite_null": "YES",
+    "valor_defecto": "now()"
+  },
+  {
+    "tabla": "centros_medicos",
+    "columna": "nombre",
+    "tipo": "text",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "centros_medicos",
+    "columna": "direccion",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "centros_medicos",
+    "columna": "telefono",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "centros_medicos",
+    "columna": "ciudad",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "centros_medicos",
+    "columna": "activo",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "true"
+  },
+  {
+    "tabla": "citas",
+    "columna": "id",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": "gen_random_uuid()"
+  },
+  {
+    "tabla": "citas",
+    "columna": "created_at",
+    "tipo": "timestamp with time zone",
+    "permite_null": "YES",
+    "valor_defecto": "now()"
+  },
+  {
+    "tabla": "citas",
+    "columna": "id_doctor",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "citas",
+    "columna": "id_paciente",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "citas",
+    "columna": "id_sede",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "citas",
+    "columna": "fecha_hora",
+    "tipo": "timestamp with time zone",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "citas",
+    "columna": "fecha_hora_estimada_actual",
+    "tipo": "timestamp with time zone",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "citas",
+    "columna": "estado",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": "'solicitada'::text"
+  },
+  {
+    "tabla": "citas",
+    "columna": "motivo",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "citas",
+    "columna": "notas_medicas",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "citas",
+    "columna": "es_emergencia",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "false"
+  },
+  {
+    "tabla": "citas",
+    "columna": "trato_especial",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "false"
+  },
+  {
+    "tabla": "citas",
+    "columna": "minutos_retraso_acumulados",
+    "tipo": "integer",
+    "permite_null": "YES",
+    "valor_defecto": "0"
+  },
+  {
+    "tabla": "citas",
+    "columna": "turno_numero",
+    "tipo": "integer",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "citas",
+    "columna": "modalidad_atencion",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": "'hora_fija'::text"
+  },
+  {
+    "tabla": "citas",
+    "columna": "duracion_minutos",
+    "tipo": "integer",
+    "permite_null": "YES",
+    "valor_defecto": "30"
+  },
+  {
+    "tabla": "citas",
+    "columna": "posicion_cola",
+    "tipo": "integer",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "citas",
+    "columna": "hora_llegada",
+    "tipo": "timestamp with time zone",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "citas",
+    "columna": "llegada_confirmada",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "false"
+  },
+  {
+    "tabla": "citas",
+    "columna": "es_control",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "false"
+  },
+  {
+    "tabla": "citas",
+    "columna": "cobrar_control",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "false"
+  },
+  {
+    "tabla": "citas",
+    "columna": "tipo_exoneracion",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "citas",
+    "columna": "monto_exoneracion",
+    "tipo": "numeric",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "citas",
+    "columna": "motivo_cancelacion",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "citas",
+    "columna": "motivo_reprogramacion",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "citas",
+    "columna": "borrador_consulta",
+    "tipo": "jsonb",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "citas",
+    "columna": "es_borrador",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "false"
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "id",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": "gen_random_uuid()"
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "created_at",
+    "tipo": "timestamp with time zone",
+    "permite_null": "YES",
+    "valor_defecto": "now()"
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "id_doctor",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "nombre_sede",
+    "tipo": "text",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "direccion",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "ciudad",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "telefono_contacto",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "estado",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "tipo_lugar",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": "'privado'::text"
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "id_centro_medico",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "numero_consultorio",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "telefono_visible",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "true"
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "duracion_consulta_minutos",
+    "tipo": "integer",
+    "permite_null": "YES",
+    "valor_defecto": "30"
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "dias_atencion",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "horario_texto",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "latitud",
+    "tipo": "double precision",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "longitud",
+    "tipo": "double precision",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "modalidad_atencion",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": "'hora_fija'::text"
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "es_principal",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "false"
+  },
+  {
+    "tabla": "doctores",
+    "columna": "id",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctores",
+    "columna": "created_at",
+    "tipo": "timestamp with time zone",
+    "permite_null": "YES",
+    "valor_defecto": "now()"
+  },
+  {
+    "tabla": "doctores",
+    "columna": "especialidad",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctores",
+    "columna": "biografia",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctores",
+    "columna": "costo_consulta",
+    "tipo": "numeric",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctores",
+    "columna": "esta_aprobado",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "true"
+  },
+  {
+    "tabla": "doctores",
+    "columna": "nro_colegiatura",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctores",
+    "columna": "credencial_url",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctores",
+    "columna": "estado_verificacion",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": "'aprobado'::text"
+  },
+  {
+    "tabla": "doctores",
+    "columna": "duracion_cita_minutos",
+    "tipo": "integer",
+    "permite_null": "YES",
+    "valor_defecto": "30"
+  },
+  {
+    "tabla": "doctores",
+    "columna": "permite_sobrecupo",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "true"
+  },
+  {
+    "tabla": "doctores",
+    "columna": "clinicas_referencia",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctores",
+    "columna": "limite_pacientes_dia",
+    "tipo": "integer",
+    "permite_null": "YES",
+    "valor_defecto": "15"
+  },
+  {
+    "tabla": "doctores",
+    "columna": "vacaciones_activo",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "false"
+  },
+  {
+    "tabla": "doctores",
+    "columna": "vacaciones_inicio",
+    "tipo": "date",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctores",
+    "columna": "vacaciones_fin",
+    "tipo": "date",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "id",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": "uuid_generate_v4()"
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "id_doctor",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "nombre_doctor",
+    "tipo": "text",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "especialidad",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": "'Medicina General'::text"
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "foto_url",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "db_url",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "db_anon_key",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "activo",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "true"
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "plan",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": "'individual'::text"
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "created_at",
+    "tipo": "timestamp with time zone",
+    "permite_null": "NO",
+    "valor_defecto": "timezone('utc'::text, now())"
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "estado_pago",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": "'al_dia'::text"
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "precio_mensual",
+    "tipo": "numeric",
+    "permite_null": "YES",
+    "valor_defecto": "35.00"
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "moneda",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": "'USD'::text"
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "intervalo_pago",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": "'mensual'::text"
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "fecha_proximo_pago",
+    "tipo": "timestamp with time zone",
+    "permite_null": "YES",
+    "valor_defecto": "(now() + '30 days'::interval)"
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "limite_doctores",
+    "tipo": "integer",
+    "permite_null": "YES",
+    "valor_defecto": "1"
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "id_doctor_administrador",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "modo_solo_lectura",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "false"
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "id",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": "gen_random_uuid()"
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "created_at",
+    "tipo": "timestamp with time zone",
+    "permite_null": "YES",
+    "valor_defecto": "now()"
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "id_paciente",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "id_doctor",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "subido_por_usuario_id",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "titulo",
+    "tipo": "text",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "tipo_examen",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "archivo_url",
+    "tipo": "text",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "formato",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": "'pdf'::text"
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "fecha_estudio",
+    "tipo": "date",
+    "permite_null": "YES",
+    "valor_defecto": "CURRENT_DATE"
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "fecha_entrega",
+    "tipo": "date",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "especialidad",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "estado",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": "'por_revisar'::text"
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "hallazgos",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "notas",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "id_cita",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "historias_clinicas",
+    "columna": "id",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": "gen_random_uuid()"
+  },
+  {
+    "tabla": "historias_clinicas",
+    "columna": "created_at",
+    "tipo": "timestamp with time zone",
+    "permite_null": "YES",
+    "valor_defecto": "now()"
+  },
+  {
+    "tabla": "historias_clinicas",
+    "columna": "id_paciente",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "historias_clinicas",
+    "columna": "id_doctor",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "historias_clinicas",
+    "columna": "id_cita",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "historias_clinicas",
+    "columna": "id_plantilla",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "historias_clinicas",
+    "columna": "datos_historia_json",
+    "tipo": "jsonb",
+    "permite_null": "YES",
+    "valor_defecto": "'{}'::jsonb"
+  },
+  {
+    "tabla": "historias_clinicas",
+    "columna": "motivo_consulta",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "historias_clinicas",
+    "columna": "sintomas",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "historias_clinicas",
+    "columna": "examen_fisico",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "historias_clinicas",
+    "columna": "diagnostico",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "historias_clinicas",
+    "columna": "tratamiento",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "historias_clinicas",
+    "columna": "notas_privadas",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "historias_clinicas",
+    "columna": "es_privado",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "true"
+  },
+  {
+    "tabla": "horarios_disponibilidad",
+    "columna": "id",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": "gen_random_uuid()"
+  },
+  {
+    "tabla": "horarios_disponibilidad",
+    "columna": "created_at",
+    "tipo": "timestamp with time zone",
+    "permite_null": "YES",
+    "valor_defecto": "now()"
+  },
+  {
+    "tabla": "horarios_disponibilidad",
+    "columna": "id_doctor",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "horarios_disponibilidad",
+    "columna": "id_sede",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "horarios_disponibilidad",
+    "columna": "dia_semana",
+    "tipo": "integer",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "horarios_disponibilidad",
+    "columna": "hora_inicio",
+    "tipo": "time without time zone",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "horarios_disponibilidad",
+    "columna": "hora_fin",
+    "tipo": "time without time zone",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "horarios_disponibilidad",
+    "columna": "modalidad_atencion",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": "'hora_fija'::text"
+  },
+  {
+    "tabla": "horarios_disponibilidad",
+    "columna": "cupo_maximo",
+    "tipo": "integer",
+    "permite_null": "YES",
+    "valor_defecto": "15"
+  },
+  {
+    "tabla": "horarios_disponibilidad",
+    "columna": "activo",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "true"
+  },
+  {
+    "tabla": "notificaciones_citas",
+    "columna": "id",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": "gen_random_uuid()"
+  },
+  {
+    "tabla": "notificaciones_citas",
+    "columna": "created_at",
+    "tipo": "timestamp with time zone",
+    "permite_null": "YES",
+    "valor_defecto": "now()"
+  },
+  {
+    "tabla": "notificaciones_citas",
+    "columna": "id_usuario",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "notificaciones_citas",
+    "columna": "id_cita",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "notificaciones_citas",
+    "columna": "tipo",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": "'retraso_emergencia'::text"
+  },
+  {
+    "tabla": "notificaciones_citas",
+    "columna": "titulo",
+    "tipo": "text",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "notificaciones_citas",
+    "columna": "mensaje",
+    "tipo": "text",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "notificaciones_citas",
+    "columna": "minutos_retraso",
+    "tipo": "integer",
+    "permite_null": "YES",
+    "valor_defecto": "0"
+  },
+  {
+    "tabla": "notificaciones_citas",
+    "columna": "leido",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "false"
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "id",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": "gen_random_uuid()"
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "created_at",
+    "tipo": "timestamp with time zone",
+    "permite_null": "YES",
+    "valor_defecto": "now()"
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "fecha_nacimiento",
+    "tipo": "date",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "tipo_sangre",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "id_doctor",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "nombre",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "cedula",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "telefono",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "email",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "ciudad_origen",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "direccion",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "id_usuario",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "id_usuario_representante",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "nombre_representante",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "cedula_representante",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "telefono_representante",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "parentesco",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "es_menor_edad",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "false"
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "cuenta_vinculada",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "false"
+  },
+  {
+    "tabla": "plantillas_historia",
+    "columna": "id",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": "gen_random_uuid()"
+  },
+  {
+    "tabla": "plantillas_historia",
+    "columna": "created_at",
+    "tipo": "timestamp with time zone",
+    "permite_null": "YES",
+    "valor_defecto": "now()"
+  },
+  {
+    "tabla": "plantillas_historia",
+    "columna": "id_doctor",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "plantillas_historia",
+    "columna": "titulo",
+    "tipo": "text",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "plantillas_historia",
+    "columna": "especialidad",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "plantillas_historia",
+    "columna": "estructura_json",
+    "tipo": "jsonb",
+    "permite_null": "YES",
+    "valor_defecto": "'{}'::jsonb"
+  },
+  {
+    "tabla": "plantillas_historia",
+    "columna": "es_predeterminada",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "false"
+  },
+  {
+    "tabla": "secretaria_doctores",
+    "columna": "id",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": "uuid_generate_v4()"
+  },
+  {
+    "tabla": "secretaria_doctores",
+    "columna": "id_secretaria",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "secretaria_doctores",
+    "columna": "id_doctor",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "secretaria_doctores",
+    "columna": "id_sede",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "secretaria_doctores",
+    "columna": "nombre_sede",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "secretaria_doctores",
+    "columna": "activo",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "true"
+  },
+  {
+    "tabla": "secretaria_doctores",
+    "columna": "created_at",
+    "tipo": "timestamp with time zone",
+    "permite_null": "NO",
+    "valor_defecto": "timezone('utc'::text, now())"
+  },
+  {
+    "tabla": "solicitudes_citas",
+    "columna": "id",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": "uuid_generate_v4()"
+  },
+  {
+    "tabla": "solicitudes_citas",
+    "columna": "id_doctor",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "solicitudes_citas",
+    "columna": "id_paciente",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "solicitudes_citas",
+    "columna": "id_sede",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "solicitudes_citas",
+    "columna": "fecha_hora",
+    "tipo": "timestamp with time zone",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "solicitudes_citas",
+    "columna": "estado",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": "'solicitada'::text"
+  },
+  {
+    "tabla": "solicitudes_citas",
+    "columna": "motivo",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "solicitudes_citas",
+    "columna": "motivo_cancelacion",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "solicitudes_citas",
+    "columna": "minutos_retraso",
+    "tipo": "integer",
+    "permite_null": "YES",
+    "valor_defecto": "0"
+  },
+  {
+    "tabla": "solicitudes_citas",
+    "columna": "created_at",
+    "tipo": "timestamp with time zone",
+    "permite_null": "NO",
+    "valor_defecto": "timezone('utc'::text, now())"
+  },
+  {
+    "tabla": "triage_consultas",
+    "columna": "id",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": "gen_random_uuid()"
+  },
+  {
+    "tabla": "triage_consultas",
+    "columna": "created_at",
+    "tipo": "timestamp with time zone",
+    "permite_null": "YES",
+    "valor_defecto": "now()"
+  },
+  {
+    "tabla": "triage_consultas",
+    "columna": "id_paciente",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "triage_consultas",
+    "columna": "id_cita",
+    "tipo": "uuid",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "triage_consultas",
+    "columna": "descripcion_sintomas",
+    "tipo": "text",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "triage_consultas",
+    "columna": "nivel_urgencia",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": "'leve'::text"
+  },
+  {
+    "tabla": "triage_consultas",
+    "columna": "requiere_hospital",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "false"
+  },
+  {
+    "tabla": "triage_consultas",
+    "columna": "resumen_preconsulta",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "usuarios",
+    "columna": "id",
+    "tipo": "uuid",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "usuarios",
+    "columna": "email",
+    "tipo": "text",
+    "permite_null": "NO",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "usuarios",
+    "columna": "nombre",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "usuarios",
+    "columna": "telefono",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "usuarios",
+    "columna": "rol",
+    "tipo": "text",
+    "permite_null": "NO",
+    "valor_defecto": "'paciente'::text"
+  },
+  {
+    "tabla": "usuarios",
+    "columna": "foto_url",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "usuarios",
+    "columna": "cedula",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "usuarios",
+    "columna": "created_at",
+    "tipo": "timestamp with time zone",
+    "permite_null": "NO",
+    "valor_defecto": "timezone('utc'::text, now())"
+  },
+  {
+    "tabla": "usuarios",
+    "columna": "updated_at",
+    "tipo": "timestamp with time zone",
+    "permite_null": "NO",
+    "valor_defecto": "timezone('utc'::text, now())"
+  },
+  {
+    "tabla": "usuarios",
+    "columna": "doctores_atendidos",
+    "tipo": "ARRAY",
+    "permite_null": "YES",
+    "valor_defecto": "'{}'::text[]"
+  },
+  {
+    "tabla": "usuarios",
+    "columna": "fecha_nacimiento",
+    "tipo": "date",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "usuarios",
+    "columna": "es_familiar_medico",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "false"
+  },
+  {
+    "tabla": "usuarios",
+    "columna": "lazo_familiar",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "usuarios",
+    "columna": "nombre_doctor_colega",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "usuarios",
+    "columna": "doctor_referencia_nombre",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "usuarios",
+    "columna": "ciudad_origen",
+    "tipo": "text",
+    "permite_null": "YES",
+    "valor_defecto": null
+  },
+  {
+    "tabla": "usuarios",
+    "columna": "es_foraneo",
+    "tipo": "boolean",
+    "permite_null": "YES",
+    "valor_defecto": "false"
+  }
+]
+
+Segunda consulta:
+
+[
+  {
+    "tabla": "avales_medicos",
+    "columna": "id_doctor_avalado",
+    "referencia_tabla": "doctores",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "avales_medicos",
+    "columna": "id_doctor_avalador",
+    "referencia_tabla": "doctores",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "catalogo_doctores",
+    "columna": "id",
+    "referencia_tabla": "usuarios",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "citas",
+    "columna": "id_sede",
+    "referencia_tabla": "doctor_sedes",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "citas",
+    "columna": "id_doctor",
+    "referencia_tabla": "doctores",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "citas",
+    "columna": "id_paciente",
+    "referencia_tabla": "pacientes",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "doctor_sedes",
+    "columna": "id_doctor",
+    "referencia_tabla": "doctores",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "doctores",
+    "columna": "id",
+    "referencia_tabla": "usuarios",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "id_doctor_administrador",
+    "referencia_tabla": "usuarios",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "doctores_tenants",
+    "columna": "id_doctor",
+    "referencia_tabla": "usuarios",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "subido_por_usuario_id",
+    "referencia_tabla": "usuarios",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "id_paciente",
+    "referencia_tabla": "pacientes",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "id_cita",
+    "referencia_tabla": "citas",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "examenes_medicos",
+    "columna": "id_doctor",
+    "referencia_tabla": "doctores",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "historias_clinicas",
+    "columna": "id_cita",
+    "referencia_tabla": "citas",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "historias_clinicas",
+    "columna": "id_doctor",
+    "referencia_tabla": "doctores",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "historias_clinicas",
+    "columna": "id_paciente",
+    "referencia_tabla": "pacientes",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "historias_clinicas",
+    "columna": "id_plantilla",
+    "referencia_tabla": "plantillas_historia",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "horarios_disponibilidad",
+    "columna": "id_sede",
+    "referencia_tabla": "doctor_sedes",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "horarios_disponibilidad",
+    "columna": "id_doctor",
+    "referencia_tabla": "doctores",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "notificaciones_citas",
+    "columna": "id_cita",
+    "referencia_tabla": "citas",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "notificaciones_citas",
+    "columna": "id_usuario",
+    "referencia_tabla": "usuarios",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "id_usuario_representante",
+    "referencia_tabla": "usuarios",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "pacientes",
+    "columna": "id_doctor",
+    "referencia_tabla": "doctores",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "plantillas_historia",
+    "columna": "id_doctor",
+    "referencia_tabla": "doctores",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "secretaria_doctores",
+    "columna": "id_doctor",
+    "referencia_tabla": "usuarios",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "secretaria_doctores",
+    "columna": "id_secretaria",
+    "referencia_tabla": "usuarios",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "solicitudes_citas",
+    "columna": "id_paciente",
+    "referencia_tabla": "usuarios",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "solicitudes_citas",
+    "columna": "id_doctor",
+    "referencia_tabla": "usuarios",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "triage_consultas",
+    "columna": "id_paciente",
+    "referencia_tabla": "pacientes",
+    "referencia_columna": "id"
+  },
+  {
+    "tabla": "triage_consultas",
+    "columna": "id_cita",
+    "referencia_tabla": "citas",
+    "referencia_columna": "id"
+  }
+]

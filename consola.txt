@@ -1,0 +1,1616 @@
+FirebaseConfig: Inicialización segura verificada. Backend principal activo: Supabase Dual-Database.
+main.dart.js:43526 Configurando cliente dedicado para Base de Datos Clínica Privada: https://awrxmpangirsfnrkvelu.supabase.co
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+main.dart.js:43526 DualDatabaseConfig: Conectando cliente clínico privado a: https://awrxmpangirsfnrkvelu.supabase.co
+2main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+user:1  Failed to load resource: the server responded with a status of 429 ()
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+zrvpssjlxhumgldltsbq.supabase.co/rest/v1/usuarios?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 403 ()
+main.dart.js:43526 Error actualizando perfil en BD: PostgrestException(message: new row violates row-level security policy for table "usuarios", code: 42501, details: , hint: null)
+awrxmpangirsfnrkvelu.supabase.co/rest/v1/centros_medicos?select=%2A&estado=ilike.%25Trujillo%25&ciudad=ilike.%25Valera%25&order=nombre.asc.nullslast:1  Failed to load resource: the server responded with a status of 404 ()
+main.dart.js:43526 Nota: Consulta centros_medicos en Supabase (usando base local): PostgrestException(message: Could not find the table 'public.centros_medicos' in the schema cache, code: PGRST205, details: , hint: Perhaps you meant the table 'public.avales_medicos')
+awrxmpangirsfnrkvelu.supabase.co/rest/v1/doctores?id=eq.e43508e7-1b28-4174-9731-2872206e0e8f:1  Failed to load resource: the server responded with a status of 400 ()
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 400 ()
+main.dart.js:43526 Upserting doctores base: PostgrestException(message: Could not find the 'logo_url' column of 'doctores' in the schema cache, code: PGRST204, details: , hint: null)
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+awrxmpangirsfnrkvelu.supabase.co/rest/v1/doctor_bloqueos?select=fecha&id_doctor=eq.e43508e7-1b28-4174-9731-2872206e0e8f:1  Failed to load resource: the server responded with a status of 404 ()
+main.dart.js:43526 DualDatabaseConfig: Conectando cliente clínico privado a: https://awrxmpangirsfnrkvelu.supabase.co
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores?select=%2A&limit=1:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+awrxmpangirsfnrkvelu.supabase.co/rest/v1/usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+awrxmpangirsfnrkvelu.supabase.co/rest/v1/usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+awrxmpangirsfnrkvelu.supabase.co/rest/v1/usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+awrxmpangirsfnrkvelu.supabase.co/rest/v1/usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+awrxmpangirsfnrkvelu.supabase.co/rest/v1/usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+awrxmpangirsfnrkvelu.supabase.co/rest/v1/usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+awrxmpangirsfnrkvelu.supabase.co/rest/v1/usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+awrxmpangirsfnrkvelu.supabase.co/rest/v1/usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+awrxmpangirsfnrkvelu.supabase.co/rest/v1/usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+awrxmpangirsfnrkvelu.supabase.co/rest/v1/usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+awrxmpangirsfnrkvelu.supabase.co/rest/v1/usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+awrxmpangirsfnrkvelu.supabase.co/rest/v1/usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+awrxmpangirsfnrkvelu.supabase.co/rest/v1/usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+awrxmpangirsfnrkvelu.supabase.co/rest/v1/usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+awrxmpangirsfnrkvelu.supabase.co/rest/v1/usuarios:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+doctores:1  Failed to load resource: the server responded with a status of 401 ()
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+main.dart.js:134308  POST https://awrxmpangirsfnrkvelu.supabase.co/rest/v1/usuarios 401 (Unauthorized)
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57961
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+main.dart.js:134308  POST https://awrxmpangirsfnrkvelu.supabase.co/rest/v1/doctores?select=%2A&limit=1 401 (Unauthorized)
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57961
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57961
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+main.dart.js:134308  POST https://awrxmpangirsfnrkvelu.supabase.co/rest/v1/usuarios 401 (Unauthorized)
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57961
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57961
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57961
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)
+main.dart.js:134308  PUT https://zrvpssjlxhumgldltsbq.supabase.co/auth/v1/user? 429 (Too Many Requests)
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57961
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57961
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57961
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+main.dart.js:43526 DualDatabaseConfig: Modo de vista persistido: doctor
+main.dart.js:134308  POST https://awrxmpangirsfnrkvelu.supabase.co/rest/v1/doctores?select=%2A&limit=1 401 (Unauthorized)
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57961
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57961
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57961
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57961
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+main.dart.js:43526 DoctorDatabaseProvisioner: Iniciando aprovisionamiento para Dr. e43508e7-1b28-4174-9731-2872206e0e8f...
+main.dart.js:134308  POST https://awrxmpangirsfnrkvelu.supabase.co/rest/v1/usuarios 401 (Unauthorized)
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57961
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57961
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57961
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57961
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:35345
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$0 @ main.dart.js:57974
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+childList
+$1 @ main.dart.js:57905
+cda @ main.dart.js:5747
+a7K @ main.dart.js:5822
+aui @ main.dart.js:58359
+lp @ main.dart.js:58357
+eF @ main.dart.js:58259
+$1 @ main.dart.js:62081
+Promise.then
+Ks @ main.dart.js:7864
+(anonymous) @ main.dart.js:134308
+(anonymous) @ main.dart.js:5572
+$2 @ main.dart.js:57953
+$1 @ main.dart.js:57947
+b3F @ main.dart.js:58972
+Bm @ main.dart.js:58975
+$0 @ main.dart.js:58433
+a0U @ main.dart.js:5708
+vs @ main.dart.js:58344
+$0 @ main.dart.js:58397
+cuR @ main.dart.js:5740
+cvc @ main.dart.js:5742
+$1 @ main.dart.js:57898
+main.dart.js:43526 DoctorDatabaseProvisioner: Error durante aprovisionamiento: PostgrestException(message: new row violates row-level security policy for table "doctores", code: 42501, details: , hint: null)

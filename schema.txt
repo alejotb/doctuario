@@ -1,0 +1,94 @@
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.tiendas (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  dueno_id uuid NOT NULL,
+  nombre text NOT NULL,
+  slug text NOT NULL UNIQUE,
+  logo_url text,
+  banner_url text,
+  color_primario text NOT NULL DEFAULT '#6366F1'::text,
+  color_secundario text NOT NULL DEFAULT '#4F46E5'::text,
+  telefono_contacto text,
+  email_contacto text,
+  direccion_fisica text,
+  moneda_principal text NOT NULL DEFAULT 'USD'::text,
+  activa boolean NOT NULL DEFAULT true,
+  plan text NOT NULL DEFAULT 'free'::text CHECK (plan = ANY (ARRAY['free'::text, 'pro'::text, 'enterprise'::text])),
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  permite_invitados boolean,
+  CONSTRAINT tiendas_pkey PRIMARY KEY (id),
+  CONSTRAINT tiendas_dueno_id_fkey FOREIGN KEY (dueno_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.usuarios (
+  id uuid NOT NULL,
+  email text NOT NULL,
+  nombre_completo text NOT NULL,
+  rol text NOT NULL DEFAULT 'cliente'::text CHECK (rol = ANY (ARRAY['super_admin'::text, 'dueno_tienda'::text, 'empleado_tienda'::text, 'cliente'::text])),
+  tienda_id uuid,
+  telefono text,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT usuarios_pkey PRIMARY KEY (id),
+  CONSTRAINT usuarios_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id),
+  CONSTRAINT usuarios_tienda_id_fkey FOREIGN KEY (tienda_id) REFERENCES public.tiendas(id)
+);
+CREATE TABLE public.categorias (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  tienda_id uuid NOT NULL,
+  nombre text NOT NULL,
+  descripcion text,
+  parent_id uuid,
+  activo boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT categorias_pkey PRIMARY KEY (id),
+  CONSTRAINT categorias_tienda_id_fkey FOREIGN KEY (tienda_id) REFERENCES public.tiendas(id),
+  CONSTRAINT categorias_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES public.categorias(id)
+);
+CREATE TABLE public.productos (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  tienda_id uuid NOT NULL,
+  codigo_barras text,
+  sku text,
+  nombre text NOT NULL,
+  descripcion text,
+  precio numeric NOT NULL DEFAULT 0.00,
+  precio_costo numeric DEFAULT 0.00,
+  stock integer NOT NULL DEFAULT 0,
+  categorias ARRAY DEFAULT '{}'::text[],
+  image_path ARRAY DEFAULT '{}'::text[],
+  activo boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  parent_id text,
+  es_variacion boolean DEFAULT false,
+  atributos jsonb,
+  parent_id_woo bigint,
+  CONSTRAINT productos_pkey PRIMARY KEY (id),
+  CONSTRAINT productos_tienda_id_fkey FOREIGN KEY (tienda_id) REFERENCES public.tiendas(id)
+);
+CREATE TABLE public.pedidos (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  tienda_id uuid NOT NULL,
+  cliente_id uuid,
+  status text NOT NULL DEFAULT 'pendiente'::text,
+  total_price numeric NOT NULL DEFAULT 0.00,
+  nombre_cliente text,
+  email_cliente text,
+  telefono_cliente text,
+  shipping_address jsonb,
+  datos_pago jsonb,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT pedidos_pkey PRIMARY KEY (id),
+  CONSTRAINT pedidos_tienda_id_fkey FOREIGN KEY (tienda_id) REFERENCES public.tiendas(id),
+  CONSTRAINT pedidos_cliente_id_fkey FOREIGN KEY (cliente_id) REFERENCES public.usuarios(id)
+);
+CREATE TABLE public.tienda_integraciones (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  tienda_id uuid NOT NULL,
+  tipo text NOT NULL CHECK (tipo = ANY (ARRAY['woocommerce'::text, 'shopify'::text, 'mercadolibre'::text])),
+  activa boolean NOT NULL DEFAULT false,
+  credenciales jsonb DEFAULT '{}'::jsonb,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT tienda_integraciones_pkey PRIMARY KEY (id),
+  CONSTRAINT tienda_integraciones_tienda_id_fkey FOREIGN KEY (tienda_id) REFERENCES public.tiendas(id)
+);
