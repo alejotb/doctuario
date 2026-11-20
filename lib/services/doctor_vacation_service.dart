@@ -95,7 +95,7 @@ class DoctorVacationService {
     final dateStr = formatearFecha(fecha);
     final String motivoFinal = (motivo != null && motivo.trim().isNotEmpty)
         ? motivo.trim()
-        : 'Vacaciones / No disponible';
+        : 'El doctor no estará disponible';
 
     try {
       final prefs = await SharedPreferences.getInstance();

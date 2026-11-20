@@ -445,7 +445,7 @@ class _UserProfileModalState extends State<UserProfileModal> {
                           contentPadding: const EdgeInsets.symmetric(horizontal: 10.0),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                           leading: const Icon(Icons.beach_access_rounded, color: Color(0xFFD97706), size: 20.0),
-                          title: Text(isSpanish ? 'Vacaciones / Días Bloqueados' : 'Vacations / Blocked Days', style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.mooli(fontWeight: FontWeight.w500), fontSize: 13.0)),
+                          title: Text(isSpanish ? 'Días No Disponibles' : 'Unavailable Days', style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.mooli(fontWeight: FontWeight.w500), fontSize: 13.0)),
                           trailing: const Icon(Icons.chevron_right_rounded, size: 18.0),
                           onTap: () {
                             Navigator.of(context).pop();

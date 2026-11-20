@@ -384,11 +384,14 @@ WITH CHECK (bucket_id IN ('examenes', 'documentos_medicos') AND auth.uid() IS NO
       'doctores',
       'doctor_sedes',
       'horarios_disponibilidad',
+      'doctor_bloqueos',
       'plantillas_historia',
       'pacientes',
       'citas',
       'historias_clinicas',
       'examenes_medicos',
+      'centros_medicos',
+      'soporte_tickets',
     ];
 
     for (final table in tablesToCheck) {

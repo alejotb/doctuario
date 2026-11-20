@@ -38,7 +38,7 @@ class DoctorVacationDialog extends StatefulWidget {
 class _DoctorVacationDialogState extends State<DoctorVacationDialog> {
   DateTime _fechaSeleccionada = DateTime.now();
   final TextEditingController _motivoController = TextEditingController(
-    text: 'Vacaciones / No disponible',
+    text: 'El doctor no estará disponible',
   );
   Set<String> _diasBloqueados = {};
   Map<String, String> _motivosBloqueo = {};
@@ -163,7 +163,7 @@ class _DoctorVacationDialogState extends State<DoctorVacationDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Días no disponibles / Vacaciones',
+                        'Días no disponibles',
                         style: GoogleFonts.mooli(
                           fontSize: 17,
                           fontWeight: FontWeight.bold,
@@ -336,7 +336,7 @@ class _DoctorVacationDialogState extends State<DoctorVacationDialog> {
                                 DoctorVacationService.parsearFecha(fechaStr) ??
                                     DateTime.now();
                             final motivo = _motivosBloqueo[fechaStr] ??
-                                'Vacaciones / No disponible';
+                                'El doctor no estará disponible';
 
                             return Container(
                               padding: const EdgeInsets.symmetric(

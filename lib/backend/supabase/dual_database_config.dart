@@ -48,59 +48,28 @@ class DualDatabaseConfig {
   SupabaseClient? _patientClient;
   bool _initialized = false;
 
-  /// Retorna si el sistema está ejecutándose con dos instancias físicas separadas de Supabase.
-  bool get isDistinctDualDatabase =>
-      doctorDbUrl.trim().toLowerCase() != patientDbUrl.trim().toLowerCase();
+  /// El sistema opera en arquitectura de Base de Datos Única (sin instancias separadas).
+  bool get isDistinctDualDatabase => false;
 
   /// Retorna si la configuración ya completó su inicialización.
   bool get isInitialized => _initialized;
 
-  /// Cliente de Supabase conectado a la base de datos privada del doctor/grupo.
-  SupabaseClient get doctorClient {
-    if (!isDistinctDualDatabase) {
-      return Supabase.instance.client;
-    }
-    if (_doctorClient != null) {
-      final centralUrl = patientDbUrl.trim().toLowerCase().replaceAll(RegExp(r'/+$'), '');
-      final currentDocUrl = doctorDbUrl.trim().toLowerCase().replaceAll(RegExp(r'/+$'), '');
-      if (currentDocUrl == centralUrl) {
-        return Supabase.instance.client;
-      }
-      return _doctorClient!;
-    }
-    return Supabase.instance.client;
-  }
+  /// Cliente unificado de Supabase para todo el sistema médico.
+  SupabaseClient get doctorClient => Supabase.instance.client;
 
-  /// Cliente de Supabase conectado a la base de datos pública/central de pacientes.
-  SupabaseClient get patientClient {
-    if (_patientClient != null) return _patientClient!;
-    return Supabase.instance.client;
-  }
+  /// Cliente unificado de Supabase para el catálogo y pacientes.
+  SupabaseClient get patientClient => Supabase.instance.client;
 
-  /// Inicializa los clientes de ambas bases de datos.
+  /// Inicializa los clientes de la base de datos unificada.
   Future<void> initializeClients() async {
     try {
       _patientClient = Supabase.instance.client;
-
-      if (isDistinctDualDatabase) {
-        debugPrint(
-          'Configurando cliente dedicado para Base de Datos Clínica Privada: $doctorDbUrl',
-        );
-        _doctorClient = SupabaseClient(
-          doctorDbUrl,
-          doctorDbAnonKey,
-          headers: {'X-Client-Info': 'prontudoc-doctor-client'},
-        );
-      } else {
-        debugPrint(
-          'DualDatabaseConfig: Modo unificado/desarrollo (Doctor y Paciente comparten instancia).',
-        );
-        _doctorClient = _patientClient;
-      }
+      _doctorClient = Supabase.instance.client;
       await loadPersistedViewMode();
       _initialized = true;
+      debugPrint('DualDatabaseConfig: Operando en arquitectura de Base de Datos Única.');
     } catch (e) {
-      debugPrint('Error inicializando clientes de base de datos dual: $e');
+      debugPrint('Error inicializando cliente de base de datos unificada: $e');
     }
   }
 
@@ -152,61 +121,15 @@ class DualDatabaseConfig {
     return envFlag || isDoctorSuiteMode;
   }
 
-  /// Retorna el cliente adecuado para la tabla especificada según la arquitectura dual.
-  SupabaseClient getClientForTable(String tableName) {
-    final lowerName = tableName.toLowerCase();
+  /// Retorna el cliente unificado de Supabase para cualquier tabla del sistema.
+  SupabaseClient getClientForTable(String tableName) => Supabase.instance.client;
 
-    // Tablas que residen en la Base de Datos Central
-    const centralTables = {
-      'doctores_tenants',
-      'usuarios',
-      'secretaria_doctores',
-    };
-    if (centralTables.contains(lowerName)) {
-      return patientClient;
-    }
-
-    // Tablas clínicas confidenciales que residen en la Base de Datos Privada del Doctor
-    const clinicalTables = {
-      'citas',
-      'doctores',
-      'doctor_sedes',
-      'horarios_disponibilidad',
-      'historias_clinicas',
-      'examenes_medicos',
-      'plantillas_historia',
-      'avales_medicos',
-      'triage_consultas',
-      'pacientes',
-      'centros_medicos',
-      'notificaciones_citas',
-    };
-    if (clinicalTables.contains(lowerName)) {
-      return doctorClient;
-    }
-
-    return isDoctorSuiteMode ? doctorClient : patientClient;
-  }
-
-  /// Conecta dinámicamente el cliente clínico del doctor a su base de datos privada.
+  /// Asegura el uso del cliente unificado de Supabase para el doctor.
   void conectarBaseDatosDoctor({
     required String dbUrl,
     required String dbAnonKey,
   }) {
-    if (dbUrl.trim().isEmpty || dbAnonKey.trim().isEmpty) return;
-    final cleanUrl = dbUrl.trim().toLowerCase().replaceAll(RegExp(r'/+$'), '');
-    final cleanCentral = patientDbUrl.trim().toLowerCase().replaceAll(RegExp(r'/+$'), '');
-    if (cleanUrl == cleanCentral) {
-      debugPrint('DualDatabaseConfig: URL de doctor coincide con base central. Usando cliente autenticado.');
-      _doctorClient = Supabase.instance.client;
-      return;
-    }
-    debugPrint('DualDatabaseConfig: Conectando cliente clínico privado a: $dbUrl');
-    _doctorClient = SupabaseClient(
-      dbUrl,
-      dbAnonKey,
-      headers: {'X-Client-Info': 'prontudoc-doctor-client'},
-    );
+    _doctorClient = Supabase.instance.client;
   }
 
   /// Consulta en la Base de Datos Central la suscripción/tenant del doctor.
@@ -255,8 +178,35 @@ class DualDatabaseConfig {
     try {
       final rows = await patientClient.from('usuarios').select('rol').eq('id', uid).limit(1);
       if (rows.isNotEmpty) {
-        final dbRole = normalize((rows.first as Map)['rol']?.toString());
+        String dbRole = normalize((rows.first as Map)['rol']?.toString());
         if (dbRole.isNotEmpty) {
+          // Para usuarios paciente o secretaria, el acceso como secretaria se activa
+          // únicamente cuando al menos un doctor ha confirmado su vínculo (activo = true).
+          if (dbRole == 'paciente' || dbRole == 'secretaria') {
+            try {
+              final activeSecLinks = await patientClient
+                  .from('secretaria_doctores')
+                  .select('id')
+                  .eq('id_secretaria', uid)
+                  .eq('activo', true)
+                  .limit(1);
+              if (activeSecLinks.isNotEmpty) {
+                if (dbRole != 'secretaria') {
+                  try {
+                    await patientClient
+                        .from('usuarios')
+                        .update({'rol': 'secretaria'})
+                        .eq('id', uid);
+                  } catch (_) {}
+                }
+                dbRole = 'secretaria';
+              } else {
+                // Sin doctor que la haya aceptado todavía: ingresa con vista de paciente
+                dbRole = 'paciente';
+              }
+            } catch (_) {}
+          }
+
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('prontudoc_user_role_$uid', dbRole);
           if (metaRole != dbRole) {
@@ -272,12 +222,12 @@ class DualDatabaseConfig {
     }
 
     if (appRole.isNotEmpty && appRole != 'paciente') return appRole;
-    if (metaRole.isNotEmpty && metaRole != 'paciente') return metaRole;
+    if (metaRole.isNotEmpty && metaRole != 'paciente' && metaRole != 'secretaria') return metaRole;
 
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedRole = normalize(prefs.getString('prontudoc_user_role_$uid'));
-      if (savedRole.isNotEmpty && savedRole != 'paciente') return savedRole;
+      if (savedRole.isNotEmpty && savedRole != 'paciente' && savedRole != 'secretaria') return savedRole;
     } catch (_) {}
 
     try {
@@ -286,15 +236,20 @@ class DualDatabaseConfig {
     } catch (_) {}
 
     try {
-      final secRows = await patientClient.from('secretaria_doctores').select('id').eq('id_secretaria', uid).limit(1);
+      final secRows = await patientClient
+          .from('secretaria_doctores')
+          .select('id')
+          .eq('id_secretaria', uid)
+          .eq('activo', true)
+          .limit(1);
       if (secRows.isNotEmpty) return 'secretaria';
     } catch (_) {}
 
     final persistedMode = normalize(_activeViewMode);
-    if (persistedMode == 'administrador' || persistedMode == 'doctor' || persistedMode == 'secretaria') {
+    if (persistedMode == 'administrador' || persistedMode == 'doctor') {
       return persistedMode;
     }
-    return metaRole.isNotEmpty ? metaRole : 'paciente';
+    return metaRole.isNotEmpty && metaRole != 'secretaria' ? metaRole : 'paciente';
   }
 
   /// Helper para aplicar aislamiento multi-doctor en bases de datos compartidas por grupos médicos.

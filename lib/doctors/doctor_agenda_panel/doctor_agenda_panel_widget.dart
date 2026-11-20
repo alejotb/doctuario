@@ -349,7 +349,7 @@ class _DoctorAgendaPanelWidgetState extends State<DoctorAgendaPanelWidget> {
     if (DoctorVacationService.estaBloqueado(fecha, _diasBloqueados)) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(isEs
-            ? 'El día ${DateFormat('dd/MM/yyyy').format(fecha)} está bloqueado por vacaciones o descanso.'
+            ? 'El doctor no estará disponible el ${DateFormat('dd/MM/yyyy').format(fecha)}.'
             : 'Date ${DateFormat('dd/MM/yyyy').format(fecha)} is blocked for vacation or time off.'),
         backgroundColor: const Color(0xFFD97706),
       ));

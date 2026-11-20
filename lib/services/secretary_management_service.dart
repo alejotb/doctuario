@@ -2,13 +2,14 @@ import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 import 'i18n_service.dart';
 
-/// Modelo de secretaria disponible para ser seleccionada por el doctor.
+/// Modelo de secretaria o usuario candidato disponible para ser seleccionado por el doctor.
 class SecretaryCandidate {
   final String id;
   final String nombre;
   final String email;
   final String? fotoUrl;
   final String? telefono;
+  final String rolActual;
 
   const SecretaryCandidate({
     required this.id,
@@ -16,6 +17,7 @@ class SecretaryCandidate {
     required this.email,
     this.fotoUrl,
     this.telefono,
+    this.rolActual = 'paciente',
   });
 }
 
@@ -71,7 +73,8 @@ class SecretaryManagementService {
   factory SecretaryManagementService() => _instance;
   SecretaryManagementService._internal();
 
-  /// Busca secretarias registradas por nombre o correo para asignar al doctor.
+  /// Busca usuarios registrados (con rol secretaria o paciente) por nombre, correo o cédula
+  /// para que el doctor pueda asignarlos y darles permisos de secretaria.
   Future<List<SecretaryCandidate>> buscarSecretarias({
     required String idDoctor,
     String? query,
@@ -88,23 +91,25 @@ class SecretaryManagementService {
       final cleanQ = query?.trim().toLowerCase() ?? '';
 
       final users = await UsuariosTable().queryRows(
-        queryFn: (q) => q.eq('rol', 'secretaria').limit(30),
+        queryFn: (q) => q.inFilter('rol', ['secretaria', 'paciente']).limit(100),
       );
 
       final candidatos = users.where((u) {
-        if (idsActivos.contains(u.id)) return false;
+        if (u.id == idDoctor || idsActivos.contains(u.id)) return false;
         if (cleanQ.isEmpty) return true;
         final name = (u.nombre ?? '').toLowerCase();
         final email = (u.email ?? '').toLowerCase();
-        return name.contains(cleanQ) || email.contains(cleanQ);
+        final cedula = (u.cedula ?? '').toLowerCase();
+        return name.contains(cleanQ) || email.contains(cleanQ) || cedula.contains(cleanQ);
       }).map((u) => SecretaryCandidate(
             id: u.id,
             nombre: (u.nombre != null && u.nombre!.trim().isNotEmpty)
                 ? u.nombre!.trim()
-                : (u.email ?? 'Secretaria'),
+                : (u.email ?? 'Usuario'),
             email: u.email ?? '',
             fotoUrl: u.fotoUrl,
             telefono: u.telefono,
+            rolActual: (u.rol ?? 'paciente').toLowerCase(),
           )).toList();
 
       return candidatos;
@@ -400,6 +405,11 @@ class SecretaryManagementService {
         queryFn: (q) => q.eq('id_doctor', doc.id).eq('id_secretaria', idSecretaria),
       );
       if (vinculos.isNotEmpty) {
+        if (vinculos.first.activo == true) {
+          throw Exception(isEs
+              ? 'Ya estás vinculada activamente con este médico.'
+              : 'You are already actively linked with this doctor.');
+        }
         await SecretariaDoctoresTable().update(
           data: {'activo': false},
           matchingRows: (q) => q.eq('id', vinculos.first.id),

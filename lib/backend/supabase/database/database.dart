@@ -19,3 +19,6 @@ export 'tables/notificaciones_citas.dart';
 export 'tables/avales_medicos.dart';
 export 'tables/triage_consultas.dart';
 export 'tables/centros_medicos.dart';
+export 'tables/doctor_bloqueos.dart';
+export 'tables/soporte_tickets.dart';
+export 'tables/doctores_tenants.dart';

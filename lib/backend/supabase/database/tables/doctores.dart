@@ -65,4 +65,7 @@ class DoctoresRow extends SupabaseDataRow {
   bool? get visibleEnCatalogo => getField<bool>('visible_en_catalogo');
   set visibleEnCatalogo(bool? value) =>
       setField<bool>('visible_en_catalogo', value);
+
+  String? get alias => getField<String>('alias');
+  set alias(String? value) => setField<String>('alias', value);
 }

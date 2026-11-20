@@ -399,3 +399,266 @@ class SkeletonAppointmentItem extends StatelessWidget {
     );
   }
 }
+
+/// Variantes visuales para que el esqueleto tenga correlación real con la pantalla destino.
+enum SkeletonPageVariant {
+  generic,
+  agenda,
+  list,
+  profile,
+}
+
+/// Esqueleto genérico de página completa reutilizable para cualquier pantalla
+/// mientras carga datos o resuelve navegación inicial sin mostrar pantallas intermedias.
+class SkeletonPageLoader extends StatelessWidget {
+  final SkeletonPageVariant variant;
+  final int itemCount;
+  final bool showHeader;
+  final bool showSummaryCards;
+
+  const SkeletonPageLoader({
+    super.key,
+    this.variant = SkeletonPageVariant.generic,
+    this.itemCount = 4,
+    this.showHeader = true,
+    this.showSummaryCards = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+
+    return Scaffold(
+      backgroundColor: bgColor,
+      body: SafeArea(
+        child: SkeletonShimmer(
+          child: SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1120),
+                child: _buildVariantBody(context),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVariantBody(BuildContext context) {
+    switch (variant) {
+      case SkeletonPageVariant.agenda:
+        return _buildAgendaSkeleton(context);
+      case SkeletonPageVariant.list:
+        return _buildListSkeleton();
+      case SkeletonPageVariant.profile:
+        return _buildProfileSkeleton();
+      case SkeletonPageVariant.generic:
+        return _buildGenericSkeleton();
+    }
+  }
+
+  Widget _buildAgendaSkeleton(BuildContext context) {
+    final isDesktop = MediaQuery.of(context).size.width >= 900;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Barra superior de agenda (selector de fecha + acciones)
+        Row(
+          children: [
+            const SkeletonCircle(size: 40),
+            const SizedBox(width: 12),
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SkeletonLine(width: 170, height: 18),
+                SizedBox(height: 6),
+                SkeletonLine(width: 110, height: 12),
+              ],
+            ),
+            const Spacer(),
+            SkeletonBox(width: isDesktop ? 130 : 90, height: 36, borderRadius: BorderRadius.circular(10)),
+            if (isDesktop) ...[
+              const SizedBox(width: 10),
+              SkeletonBox(width: 110, height: 36, borderRadius: BorderRadius.circular(10)),
+            ],
+          ],
+        ),
+        const SizedBox(height: 18),
+        // Franja de métricas de la agenda
+        Row(
+          children: List.generate(
+            isDesktop ? 4 : 2,
+            (i) => Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(right: i == (isDesktop ? 3 : 1) ? 0 : 12),
+                child: SkeletonBox(height: 74, borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        if (isDesktop)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Columna principal de citas / timeline
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SkeletonLine(width: 150, height: 15),
+                    const SizedBox(height: 12),
+                    for (int i = 0; i < itemCount; i++) const SkeletonAppointmentItem(),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 18),
+              // Panel lateral de resumen del paciente / calendario
+              Expanded(
+                flex: 2,
+                child: Column(
+                  children: [
+                    SkeletonBox(width: double.infinity, height: 220, borderRadius: BorderRadius.circular(16)),
+                    const SizedBox(height: 14),
+                    SkeletonBox(width: double.infinity, height: 150, borderRadius: BorderRadius.circular(16)),
+                  ],
+                ),
+              ),
+            ],
+          )
+        else
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SkeletonLine(width: 140, height: 15),
+              const SizedBox(height: 12),
+              for (int i = 0; i < itemCount; i++) const SkeletonAppointmentItem(),
+            ],
+          ),
+      ],
+    );
+  }
+
+  Widget _buildListSkeleton() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SkeletonLine(width: 190, height: 22),
+        const SizedBox(height: 14),
+        // Buscador
+        SkeletonBox(width: double.infinity, height: 46, borderRadius: BorderRadius.circular(12)),
+        const SizedBox(height: 12),
+        // Chips de filtro
+        Row(
+          children: [
+            SkeletonBox(width: 82, height: 30, borderRadius: BorderRadius.circular(16)),
+            const SizedBox(width: 8),
+            SkeletonBox(width: 96, height: 30, borderRadius: BorderRadius.circular(16)),
+            const SizedBox(width: 8),
+            SkeletonBox(width: 78, height: 30, borderRadius: BorderRadius.circular(16)),
+          ],
+        ),
+        const SizedBox(height: 18),
+        for (int i = 0; i < itemCount; i++)
+          SkeletonBox(
+            width: double.infinity,
+            height: 84,
+            borderRadius: BorderRadius.circular(14),
+            margin: const EdgeInsets.only(bottom: 12),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildProfileSkeleton() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const SizedBox(height: 12),
+        const SkeletonCircle(size: 88),
+        const SizedBox(height: 14),
+        const SkeletonLine(width: 180, height: 20),
+        const SizedBox(height: 8),
+        const SkeletonLine(width: 130, height: 13),
+        const SizedBox(height: 24),
+        for (int i = 0; i < 4; i++)
+          SkeletonBox(
+            width: double.infinity,
+            height: 62,
+            borderRadius: BorderRadius.circular(14),
+            margin: const EdgeInsets.only(bottom: 12),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildGenericSkeleton() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (showHeader) ...[
+          const Row(
+            children: [
+              SkeletonCircle(size: 42),
+              SizedBox(width: 14),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SkeletonLine(width: 180, height: 18),
+                  SizedBox(height: 8),
+                  SkeletonLine(width: 120, height: 12),
+                ],
+              ),
+              Spacer(),
+              SkeletonBox(width: 100, height: 36),
+            ],
+          ),
+          const SizedBox(height: 24),
+        ],
+        if (showSummaryCards) ...[
+          Row(
+            children: [
+              Expanded(
+                child: SkeletonBox(
+                  height: 84,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: SkeletonBox(
+                  height: 84,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: SkeletonBox(
+                  height: 84,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+        ],
+        const SkeletonLine(width: 160, height: 15),
+        const SizedBox(height: 14),
+        for (int i = 0; i < itemCount; i++) ...[
+          SkeletonBox(
+            width: double.infinity,
+            height: 82,
+            borderRadius: BorderRadius.circular(14),
+            margin: const EdgeInsets.only(bottom: 12),
+          ),
+        ],
+      ],
+    );
+  }
+}
+

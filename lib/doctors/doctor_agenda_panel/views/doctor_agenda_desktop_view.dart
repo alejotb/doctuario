@@ -279,12 +279,6 @@ class _DoctorAgendaDesktopViewState extends State<DoctorAgendaDesktopView> {
                 ]),
               ),
             ],
-            const SizedBox(height: 3),
-            Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-              InkWell(onTap: () => widget.onEditarCita(c, pac), borderRadius: BorderRadius.circular(4), child: Padding(padding: const EdgeInsets.all(2), child: Icon(Icons.edit_outlined, size: 13, color: Colors.grey.shade500))),
-              const SizedBox(width: 2),
-              InkWell(onTap: () => widget.onAbrirHistoria(c, pac), borderRadius: BorderRadius.circular(4), child: const Padding(padding: EdgeInsets.all(2), child: Icon(Icons.medical_services_outlined, size: 13, color: Color(0xFF0284C7)))),
-            ]),
           ],
         ),
       ),

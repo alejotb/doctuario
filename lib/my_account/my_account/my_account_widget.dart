@@ -15,6 +15,7 @@ import '/main.dart';
 import '/services/admin_tenant_service.dart';
 import '/services/gemini_ai_service.dart';
 import '/services/i18n_service.dart';
+import '/services/secretary_management_service.dart';
 import '../dialogs/notification_preferences_dialog.dart';
 import 'family_linking_modal.dart';
 import 'my_account_model.dart';
@@ -442,14 +443,125 @@ class _MyAccountWidgetState extends State<MyAccountWidget> {
     );
   }
 
+  Future<void> _mostrarDialogoSolicitarSecretaria(bool isEs) async {
+    final uid = SupaFlow.client.auth.currentUser?.id ?? '';
+    if (uid.isEmpty) return;
+    final emailCtrl = TextEditingController();
+    bool enviando = false;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+          title: Text(
+            isEs ? 'Vincularme como Secretaria' : 'Link as a Secretary',
+            style: GoogleFonts.mooli(fontWeight: FontWeight.bold, fontSize: 17.0),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                isEs
+                    ? 'Ingresa el correo del médico con quien trabajas. El médico recibirá tu solicitud y, al aceptarla, se habilitará tu panel de Recepción.'
+                    : 'Enter the email of the doctor you work with. Once the doctor approves your request, your Reception dashboard will be enabled.',
+                style: GoogleFonts.mooli(fontSize: 12.5, color: const Color(0xFF475569)),
+              ),
+              const SizedBox(height: 14.0),
+              TextField(
+                controller: emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: isEs ? 'Correo del médico' : 'Doctor email',
+                  hintText: 'doctor@ejemplo.com',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: enviando ? null : () => Navigator.of(ctx).pop(),
+              child: Text(isEs ? 'Cancelar' : 'Cancel', style: GoogleFonts.mooli()),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0F766E),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+              ),
+              onPressed: enviando
+                  ? null
+                  : () async {
+                      final emailDoc = emailCtrl.text.trim();
+                      if (emailDoc.isEmpty) return;
+                      setDialogState(() => enviando = true);
+                      try {
+                        await SecretaryManagementService().vincularSecretariaConDoctorPorEmail(
+                          idSecretaria: uid,
+                          emailDoctor: emailDoc,
+                        );
+                        if (ctx.mounted) Navigator.of(ctx).pop();
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: const Color(0xFF0F766E),
+                              content: Text(
+                                isEs
+                                    ? 'Solicitud enviada. Cuando el médico la acepte tendrás acceso al panel de secretaria.'
+                                    : 'Request sent. Once the doctor accepts, you will have access to the secretary panel.',
+                              ),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        setDialogState(() => enviando = false);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: Colors.redAccent,
+                              content: Text(e.toString().replaceFirst('Exception: ', '')),
+                            ),
+                          );
+                        }
+                      }
+                    },
+              child: enviando
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : Text(isEs ? 'Enviar solicitud' : 'Send request', style: GoogleFonts.mooli(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+    emailCtrl.dispose();
+  }
+
   Widget _buildPreferencesCard(FlutterFlowTheme theme, bool isEs) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final rolActual = (_usuario?.rol ?? '').trim().toLowerCase();
+    final puedeSolicitarSecretaria = rolActual != 'doctor' && rolActual != 'admin' && rolActual != 'administrador';
     return Container(
       decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(14.0), border: Border.all(color: theme.alternate, width: 1.0)),
       child: Column(children: [
+        if (puedeSolicitarSecretaria) ...[
+          _buildTile(
+            icon: Icons.support_agent_rounded,
+            iconColor: const Color(0xFF0F766E),
+            title: isEs ? 'Trabajar como Secretaria de un Médico' : 'Work as a Doctor\'s Secretary',
+            subtitle: isEs ? 'Envía solicitud a uno o más doctores para gestionar su agenda' : 'Send a request to one or more doctors to manage their schedule',
+            onTap: () => _mostrarDialogoSolicitarSecretaria(isEs),
+          ),
+          const Divider(height: 1.0, indent: 56.0),
+        ],
         _buildTile(icon: Icons.lock_reset_rounded, iconColor: const Color(0xFF0284C7), title: isEs ? 'Cambiar Contraseña' : 'Change Password', subtitle: isEs ? 'Actualizar contraseña de acceso' : 'Update account password', onTap: () => ChangePasswordDialog.show(context)),
         const Divider(height: 1.0, indent: 56.0),
-        _buildTile(icon: Icons.tune_rounded, iconColor: const Color(0xFFEAB308), title: isEs ? 'Preferencias de Notificaciones' : 'Notification Preferences', subtitle: isEs ? 'Configurar qué alertas recibir' : 'Configure alert preferences', onTap: () => NotificationPreferencesDialog.show(context, isDoctor: (_usuario?.rol ?? '').trim().toLowerCase() == 'doctor')),
+        _buildTile(icon: Icons.tune_rounded, iconColor: const Color(0xFFEAB308), title: isEs ? 'Preferencias de Notificaciones' : 'Notification Preferences', subtitle: isEs ? 'Configurar qué alertas recibir' : 'Configure alert preferences', onTap: () => NotificationPreferencesDialog.show(context, isDoctor: rolActual == 'doctor')),
         const Divider(height: 1.0, indent: 56.0),
         _buildTile(
           icon: Icons.language_rounded, iconColor: const Color(0xFF10B981), title: isEs ? 'Idioma del Sistema' : 'System Language', subtitle: isEs ? 'Español' : 'English',

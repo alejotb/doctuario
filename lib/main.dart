@@ -10,12 +10,14 @@ import '/backend/supabase/supabase.dart';
 import 'backend/firebase/firebase_config.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
+import 'services/doctor_subscription_service.dart';
 import 'services/google_auth_service.dart';
 import 'services/i18n_service.dart';
 import 'services/notifications_service.dart';
 import 'services/patient_location_service.dart';
 import 'admin/admin_doctor_tenants_modal_widget.dart';
 import 'components/app_navigation_shell.dart';
+import 'components/skeleton_shimmer.dart';
 import 'doctors/doctor_secretaries/doctor_secretaries_widget.dart';
 import 'patient/patient_my_appointments/patient_my_appointments_widget.dart';
 import 'index.dart';
@@ -101,23 +103,83 @@ class NavBarPage extends StatefulWidget {
 }
 
 class _NavBarPageState extends State<NavBarPage> {
+  static String? _cachedUserId;
+  static String? _cachedRol;
+  static String _cachedNombre = '';
+  static String _cachedGenero = '';
+  static String _cachedFotoUrl = '';
+  static bool _cachedPerfilCompleto = false;
+
   String _currentPageName = 'Home';
   late Widget? _currentPage;
   String _rol = 'paciente';
   String _userNombre = '';
   String _userGenero = '';
   String _userFotoUrl = '';
+  bool _isResolvingInitialRole = false;
   int _refreshCounter = 0;
+
+  static String _inferInitialRole(String? uid, String? initialPage) {
+    if (uid == null || uid.isEmpty) return 'paciente';
+    if (_cachedUserId == uid && _cachedRol != null) return _cachedRol!;
+
+    if (initialPage != null) {
+      if (const {'Agenda', 'Sedes', 'Pacientes', 'Secretarias', 'Consultas'}.contains(initialPage)) {
+        return 'doctor';
+      }
+      if (initialPage == 'Recepcion') return 'secretaria';
+      if (const {'Dashboard', 'Tenants', 'Doctores'}.contains(initialPage)) {
+        return 'administrador';
+      }
+    }
+
+    final persisted = DualDatabaseConfig.instance.activeViewMode.trim().toLowerCase();
+    if (persisted == 'administrador' || persisted == 'admin') return 'administrador';
+    if (persisted == 'doctor') return 'doctor';
+    if (persisted == 'secretaria') return 'secretaria';
+
+    final metaRol = (SupaFlow.client.auth.currentUser?.userMetadata?['rol'] ?? '').toString().trim().toLowerCase();
+    if (metaRol == 'administrador' || metaRol == 'admin') return 'administrador';
+    if (metaRol == 'doctor' || metaRol == 'medico' || metaRol == 'médico') return 'doctor';
+    if (metaRol == 'secretaria' || metaRol == 'asistente') return 'secretaria';
+
+    return 'paciente';
+  }
 
   @override
   void initState() {
     super.initState();
-    _currentPageName = widget.initialPage ?? _currentPageName;
-    if (_currentPageName == 'Perfil') _currentPageName = 'MyAccount';
+    final uid = SupaFlow.client.auth.currentUser?.id;
+    if (uid == null || uid.isEmpty) {
+      _cachedUserId = null;
+      _cachedRol = null;
+      _cachedNombre = '';
+      _cachedGenero = '';
+      _cachedFotoUrl = '';
+      _cachedPerfilCompleto = false;
+    }
+
+    _rol = _inferInitialRole(uid, widget.initialPage);
+    if (_cachedUserId == uid && uid != null) {
+      _userNombre = _cachedNombre;
+      _userGenero = _cachedGenero;
+      _userFotoUrl = _cachedFotoUrl;
+    }
+
+    final allowed = _roleRoutes[_rol] ?? _roleRoutes['paciente']!;
+    final requested = widget.initialPage == 'Perfil' ? 'MyAccount' : widget.initialPage;
+    if (requested != null && allowed.containsKey(requested)) {
+      _currentPageName = requested;
+    } else {
+      _currentPageName = allowed.keys.first;
+    }
     _currentPage = widget.page;
+
+    // Solo mostrar carga breve en arranque en frío en '/' cuando el usuario está autenticado y aún no se ha verificado su rol en sesión
+    _isResolvingInitialRole = uid != null && uid.isNotEmpty && _cachedUserId != uid && widget.initialPage == null;
+
     _cargarRol();
     I18nService.instance.addListener(_onLocaleChanged);
-    final uid = SupaFlow.client.auth.currentUser?.id;
     if (uid != null) NotificationsService.instance.actualizarContadorNoLeidas(uid);
   }
 
@@ -181,11 +243,19 @@ class _NavBarPageState extends State<NavBarPage> {
   Future<void> _cargarRol() async {
     final currentUser = SupaFlow.client.auth.currentUser;
     final currentUserId = currentUser?.id;
-    if (currentUserId == null) return;
+    if (currentUserId == null) {
+      if (_isResolvingInitialRole && mounted) {
+        setState(() => _isResolvingInitialRole = false);
+      }
+      return;
+    }
     try {
+      final alreadyCached = _cachedUserId == currentUserId && _cachedRol != null;
       final meta = currentUser?.userMetadata ?? const <String, dynamic>{};
       final isOauthDoc = kIsWeb && Uri.base.queryParameters['oauth_role'] == 'doctor';
-      await GoogleAuthService.instance.ensureUserSynced(userId: currentUserId, fallbackRole: isOauthDoc ? 'doctor' : null);
+      if (!alreadyCached) {
+        await GoogleAuthService.instance.ensureUserSynced(userId: currentUserId, fallbackRole: isOauthDoc ? 'doctor' : null);
+      }
       final resolvedRol = await DualDatabaseConfig.instance.resolveUserRole(currentUser);
 
       UsuariosRow? usr;
@@ -203,31 +273,48 @@ class _NavBarPageState extends State<NavBarPage> {
       final foto = (usr?.fotoUrl?.trim().isNotEmpty ?? false) ? usr!.fotoUrl!.trim() : (meta['foto_url']?.toString().trim() ?? currentUserPhoto);
       final genero = usr?.data['genero']?.toString() ?? usr?.data['sexo']?.toString() ?? meta['genero']?.toString() ?? '';
 
+      bool perfilCompletoVerificado = _cachedPerfilCompleto && alreadyCached;
       if (effectiveRol == 'administrador') {
         await DualDatabaseConfig.instance.persistActiveViewMode('administrador');
+        perfilCompletoVerificado = true;
       } else if (isDoctor) {
         await DualDatabaseConfig.instance.persistActiveViewMode('doctor');
-        bool perfilCompleto = false;
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          final sedes = await DoctorSedesTable().queryRows(queryFn: (q) => q.eq('id_doctor', currentUserId).limit(1));
-          final tieneCiudad = (usr?.ciudadOrigen?.trim().isNotEmpty ?? false) || (meta['ciudad_origen']?.toString().trim().isNotEmpty ?? false);
-          final tieneEsp = (meta['especialidad']?.toString().trim().isNotEmpty ?? false);
-          perfilCompleto = (prefs.getBool('prontudoc_perfil_completo_$currentUserId') ?? false) || meta['perfil_completo'] == true || meta['setup_completo'] == true || sedes.isNotEmpty || (tieneCiudad && tieneEsp);
-        } catch (_) {}
-        if (!mounted) return;
-        if (!perfilCompleto) {
-          context.goNamedAuth(CreateProfileWidget.routeName, mounted, queryParameters: {'rol': serializeParam('Doctor', ParamType.String)}.withoutNulls);
-          return;
+        await DoctorSubscriptionService.instance.verificarEstadoDoctor(idDoctor: currentUserId);
+        if (!perfilCompletoVerificado) {
+          bool perfilCompleto = false;
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            final sedes = await DoctorSedesTable().queryRows(queryFn: (q) => q.eq('id_doctor', currentUserId).limit(1));
+            final tieneCiudad = (usr?.ciudadOrigen?.trim().isNotEmpty ?? false) || (meta['ciudad_origen']?.toString().trim().isNotEmpty ?? false);
+            final tieneEsp = (meta['especialidad']?.toString().trim().isNotEmpty ?? false);
+            perfilCompleto = (prefs.getBool('prontudoc_perfil_completo_$currentUserId') ?? false) || meta['perfil_completo'] == true || meta['setup_completo'] == true || sedes.isNotEmpty || (tieneCiudad && tieneEsp);
+          } catch (_) {}
+          if (!mounted) return;
+          if (!perfilCompleto) {
+            context.goNamedAuth(CreateProfileWidget.routeName, mounted, queryParameters: {'rol': serializeParam('Doctor', ParamType.String)}.withoutNulls);
+            return;
+          }
+          perfilCompletoVerificado = true;
         }
       } else if (effectiveRol == 'secretaria') {
         await DualDatabaseConfig.instance.persistActiveViewMode('secretaria');
-        final secDone = meta['perfil_completo'] == true || (foto.isNotEmpty && (usr?.ciudadOrigen?.trim().isNotEmpty ?? false));
-        if (!mounted) return;
-        if (!secDone) { context.goNamedAuth(CreateProfileWidget.routeName, mounted, queryParameters: {'rol': serializeParam('secretaria', ParamType.String)}.withoutNulls); return; }
+        if (!perfilCompletoVerificado) {
+          final secDone = meta['perfil_completo'] == true || (foto.isNotEmpty && (usr?.ciudadOrigen?.trim().isNotEmpty ?? false));
+          if (!mounted) return;
+          if (!secDone) { context.goNamedAuth(CreateProfileWidget.routeName, mounted, queryParameters: {'rol': serializeParam('secretaria', ParamType.String)}.withoutNulls); return; }
+          perfilCompletoVerificado = true;
+        }
       } else {
         await DualDatabaseConfig.instance.persistActiveViewMode('paciente');
+        perfilCompletoVerificado = true;
       }
+
+      _cachedUserId = currentUserId;
+      _cachedRol = effectiveRol;
+      _cachedNombre = nombre;
+      _cachedFotoUrl = foto;
+      _cachedGenero = genero;
+      _cachedPerfilCompleto = perfilCompletoVerificado;
 
       final allowedRoutes = _roleRoutes[effectiveRol] ?? _roleRoutes['paciente']!;
       final normalizedPage = _currentPageName == 'Perfil' ? 'MyAccount' : _currentPageName;
@@ -239,6 +326,7 @@ class _NavBarPageState extends State<NavBarPage> {
         _userNombre = nombre;
         _userFotoUrl = foto;
         _userGenero = genero;
+        _isResolvingInitialRole = false;
         _currentPage = null;
         _currentPageName = targetKey;
       });
@@ -250,11 +338,37 @@ class _NavBarPageState extends State<NavBarPage> {
       }
     } catch (e) {
       debugPrint('Error cargando rol en nav bar: $e');
+      if (_isResolvingInitialRole && mounted) {
+        setState(() => _isResolvingInitialRole = false);
+      }
     }
+  }
+
+  SkeletonPageVariant _skeletonVariantForCurrentTarget() {
+    if (_currentPageName == 'Agenda' || _currentPageName == 'Recepcion') {
+      return SkeletonPageVariant.agenda;
+    }
+    if (_currentPageName == 'Pacientes' ||
+        _currentPageName == 'DoctorsList' ||
+        _currentPageName == 'Consultas' ||
+        _currentPageName == 'Sedes' ||
+        _currentPageName == 'Secretarias') {
+      return SkeletonPageVariant.list;
+    }
+    if (_currentPageName == 'MyAccount' || _currentPageName == 'Perfil') {
+      return SkeletonPageVariant.profile;
+    }
+    if (_rol == 'doctor' || _rol == 'secretaria') {
+      return SkeletonPageVariant.agenda;
+    }
+    return SkeletonPageVariant.generic;
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isResolvingInitialRole) {
+      return SkeletonPageLoader(variant: _skeletonVariantForCurrentTarget());
+    }
     final currentUserId = SupaFlow.client.auth.currentUser?.id ?? '';
     final isEs = I18nService.instance.isSpanish;
 
@@ -296,6 +410,20 @@ class _NavBarPageState extends State<NavBarPage> {
     }
 
     if (_rol == 'doctor') {
+      if (DoctorSubscriptionService.instance.isPendingApproval) {
+        return DoctorAccountSetupPendingScreen(
+          idDoctor: currentUserId,
+          onRefreshStatus: () => safeSetState(() {}),
+          onSignOut: () async {
+            _cachedUserId = null;
+            _cachedRol = null;
+            _cachedPerfilCompleto = false;
+            DoctorSubscriptionService.instance.reset();
+            await SupaFlow.client.auth.signOut();
+            if (mounted) context.goNamed(Login1Widget.routeName);
+          },
+        );
+      }
       final tabs = {'Agenda': DoctorAgendaPanelWidget(idDoctor: currentUserId), 'Sedes': DoctorSedesConfigWidget(idDoctor: currentUserId), 'Pacientes': DoctorPacientesListWidget(idDoctor: currentUserId), 'Secretarias': DoctorSecretariesWidget(idDoctor: currentUserId), 'Consultas': DoctorConsultasRealizadasWidget(idDoctor: currentUserId), 'MyAccount': const MyAccountWidget()};
       final navDefs = [NavBarItemDef(Icons.event_note_rounded, isEs ? 'Agenda' : 'Schedule'), NavBarItemDef(Icons.location_city_rounded, isEs ? 'Sedes' : 'Clinics'), NavBarItemDef(Icons.people_alt_rounded, isEs ? 'Pacientes' : 'Patients'), NavBarItemDef(Icons.support_agent_rounded, isEs ? 'Secretarias' : 'Secretaries'), NavBarItemDef(Icons.history_edu_rounded, isEs ? 'Consultas' : 'Consultations'), NavBarItemDef(Icons.person_outline_rounded, isEs ? 'Mi Cuenta' : 'My Account')];
       final idx = tabs.keys.toList().indexOf(_currentPageName == 'Perfil' ? 'MyAccount' : (_currentPageName == 'DoctorsList' || _currentPageName == 'Colegas' ? 'Consultas' : _currentPageName));
