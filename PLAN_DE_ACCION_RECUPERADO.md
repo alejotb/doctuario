@@ -40,33 +40,27 @@
 
 ---
 
-### Módulo 3: Agenda, Modalidad "Orden de Llegada" y UX de Escritorio  [EN PROGRESO]
+### Módulo 3: Agenda, Modalidad "Orden de Llegada" y UX de Escritorio  [ESTADO: COMPLETADO ✅]
 - [x] **Paso 3.1:** Limpieza visual en escritorio (quitar lápiz y botón redundante debajo del paciente en `doctor_agenda_desktop_view.dart`) y cambiar mensajes de vacaciones por *"El doctor no estará disponible"*.
-- [ ] **Paso 3.2:** Soporte para modalidad "Por Orden de Llegada": no solicitar hora fija, agrupar pacientes del día en lista de espera, confirmación de llegada y Drag & Drop sincronizado en tiempo real entre doctor y secretaria.
-- [ ] **Paso 3.3:** Cancelación y reprogramación con motivo (individual y masiva para el día completo) e historial permanente de citas en agenda.
+- [x] **Paso 3.2:** Modalidad "Por Orden de Llegada" sin exigir hora fija en citas manuales (`ManualAppointmentDialog` + `AppointmentVenueDatetimeSection`), asignación automática de turno/cola, corrección de filtro de sede en secretaría y sincronización en tiempo real (Supabase Realtime) entre doctor y secretaria.
+- [x] **Paso 3.3:** Cancelación y reprogramación con motivo obligatorio/explícito (`AgendaAppointmentActions.pedirMotivoYCancelar`, `EditAppointmentDialog` y `ManageDayAppointmentsDialog` para día completo), unificación de `AppointmentCancellationService` a base única y aislamiento estricto de citas por `widget.idDoctor` conservando el historial permanente.
 
 ---
 
-### Módulo 4: Consulta Médica, Historias, Récipes y Exámenes
-- [ ] Inmutabilidad de nombres: evitar que pacientes manuales no registrados sean renombrados como "Paciente".
-- [ ] Corrección en `DoctorPacientesListWidget`: consultar exclusivamente pacientes asociados a citas o historias del doctor, conservando sus nombres y fichas completas.
-- [ ] Récipe médico: cargar `logo_url`, especialidad real (no "médico general"), opciones de media hoja/hoja completa y bloques vs texto libre.
-- [ ] Exámenes médicos: vinculación a `id_cita` y soporte para descarga de formatos especiales (ECG, etc.).
-- [ ] Resolver desbordamiento visual y texto duplicado ("Consulta del...") en el resumen del paciente.
-- [ ] Apartado dedicado de Borradores para notas y récipes.
+### Módulo 4: Consulta Médica, Historias, Récipes y Exámenes  [ESTADO: COMPLETADO ✅]
+- [x] **Paso 4.1:** Aislamiento estricto en `DoctorPacientesListWidget` (mostrar únicamente pacientes con citas/historias o asignados al doctor) y preservación de nombres reales de pacientes manuales en `DoctorPacientesListWidget` y `DoctorConsultasRealizadasWidget` (incluyendo estado `atendida`).
+- [x] **Paso 4.2:** Récipe médico (`MedicalReportPrinterService` + `PatientHistoryTab`): carga automática de `logo_url` y especialidad real del médico, selector de impresión en Hoja Completa o Media Hoja, y alternancia entre formato Por Bloques o Texto Completo editable.
+- [x] **Paso 4.3:** Exámenes médicos: vinculación a `id_cita` (`ManualAppointmentDialog`), soporte para descarga directa de formatos especiales como ECG/DICOM/XML (`MedicalExamViewerDialog` + `FileType.any`), y búsqueda/ordenamiento por fecha, nombre o tipo (`PatientExamsWidget`).
+- [x] **Paso 4.4:** Resolución de desbordamiento horizontal y duplicados de *"Consulta del..."* en `PatientInBoxCard` (con modal de detalle al hacer clic) y apartado de Borradores en `DoctorConsultasRealizadasWidget`.
 
 ---
 
-### Módulo 5: Compartir Perfil, Modo "Burbuja" y Soporte Técnico
-- [ ] Enlace público con `alias` en lugar de UUID.
-- [ ] Mensaje de WhatsApp limpio (ejemplo: *"8:00 AM a 5:00 PM"*), sin timestamps ISO.
-- [ ] Resolver bloqueo de navegación al visualizar un perfil compartido.
-- [ ] Quitar botones duplicados de compartir (dejar 1) y de agendar (dejar 1).
-- [ ] Switch de Modo "Burbuja" (software privado vs catálogo público).
-- [ ] Módulo de Soporte Técnico en el perfil con envío a `soporte_tickets` y panel de SuperAdmin para visualización y resolución.
+### Módulo 5: Compartir Perfil, Modo "Burbuja" y Soporte Técnico  [ESTADO: COMPLETADO ✅]
+- [x] **Paso 5.1:** Enlace público con `alias` en lugar de UUID (`DoctorShareHelper` + `DoctorPublicProfileWidget` + `nav.dart`), formato limpio de horas en WhatsApp (*"8:00 AM a 5:00 PM"*), desbloqueo de navegación de regreso al inicio y eliminación de botones duplicados de compartir.
+- [x] **Paso 5.2:** Switch de Modo "Burbuja" + editor de `alias` público (`DoctorSoloModeDialog`) y control de colisión de horarios al crear/editar sedes con opciones *Sobreescribir*, *Omitir días repetidos* o *Cancelar* (`DoctorSedesConfigWidget`).
+- [x] **Paso 5.3:** Módulo de Soporte Técnico en el perfil del médico (`MyAccountWidget` + `DoctorSupportDialog`) con envío a `soporte_tickets`, notificación a administradores y panel de SuperAdmin para visualización y resolución (`AdminSupportTicketsModal`).
 
 ---
 
-### Módulo 6: Planes SaaS y Verificación de Médicos
-- [ ] Panel administrativo para verificar y aprobar credenciales médicas.
-- [ ] Planes de suscripción mensual ($25 - $30 / mes: individual, dúo, clínica) con invitaciones por correo.
+### Módulo 6: Planes SaaS y Verificación de Médicos  [ESTADO: COMPLETADO ✅]
+- [x] **Paso 6.1:** Panel administrativo para verificar/aprobar credenciales médicas o solicitar número de registro (`AdminDoctorTenantsModalWidget` + `AdminTenantService.solicitarCredencialesDoctor`), precios SaaS ajustados ($25/mes individual y planes grupales con descuento) e invitación por correo (`invitarDoctorAPlanGrupo`).

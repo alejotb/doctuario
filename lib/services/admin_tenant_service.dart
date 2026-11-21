@@ -37,8 +37,8 @@ class DoctorPendingRequest {
     this.estaAprobado = false,
     this.tenantActivo = false,
     this.credencialRecuperacionEnc,
-    this.plan = 'fundador',
-    this.precioMensual = 35.0,
+    this.plan = 'individual',
+    this.precioMensual = 25.0,
     this.estadoPago = 'al_dia',
     this.modoSoloLectura = false,
     this.intervaloPago = 'mensual',
@@ -58,16 +58,20 @@ class DoctorPendingRequest {
     final String estadoVerif = map['estado_verificacion']?.toString() ??
         map['estado']?.toString() ??
         (estaAprobado ? 'aprobado' : 'pendiente');
-    final String rawPlan = map['plan']?.toString().toLowerCase().trim() ?? 'fundador';
+    final String rawPlan = map['plan']?.toString().toLowerCase().trim() ?? 'individual';
     final double precio = double.tryParse(map['precio_mensual']?.toString() ?? '') ??
-        (rawPlan == 'individual' ? 50.0 : (rawPlan == 'duo' ? 70.0 : (rawPlan == 'grupo' ? 160.0 : (rawPlan == 'clinica' ? 280.0 : 35.0))));
+        (rawPlan == 'individual'
+            ? 25.0
+            : (rawPlan == 'duo'
+                ? 45.0
+                : (rawPlan == 'grupo' ? 100.0 : (rawPlan == 'clinica' ? 180.0 : 25.0))));
 
     return DoctorPendingRequest(
       idDoctor: map['id']?.toString() ?? map['id_doctor']?.toString() ?? '',
       nombre: map['nombre']?.toString() ?? 'Sin nombre',
       email: map['email']?.toString() ?? '',
       telefono: map['telefono']?.toString() ?? '',
-      especialidad: map['especialidad']?.toString() ?? 'Medicina General',
+      especialidad: map['especialidad']?.toString() ?? 'Especialista',
       estado: estadoVerif,
       createdAt: map['created_at'] != null
           ? DateTime.tryParse(map['created_at'].toString()) ?? DateTime.now()
@@ -87,7 +91,7 @@ class DoctorPendingRequest {
   }
 }
 
-/// Servicio administrativo para la gestión de tenants de doctores en la Base Central.
+/// Servicio administrativo para la gestión de planes, suscripciones y verificación de doctores.
 class AdminTenantService {
   AdminTenantService._();
 
@@ -95,6 +99,58 @@ class AdminTenantService {
   static AdminTenantService get instance => _instance ??= AdminTenantService._();
 
   final _dualConfig = DualDatabaseConfig.instance;
+
+  /// Solicita al médico su número de registro / colegiatura cuando el administrador
+  /// necesita confirmar su capacidad profesional antes de aprobarlo.
+  Future<bool> solicitarCredencialesDoctor(String idDoctor) async {
+    try {
+      await SupaFlow.client.from('doctores').update({
+        'estado_verificacion': 'solicitud_credenciales',
+        'esta_aprobado': false,
+      }).eq('id', idDoctor);
+      return true;
+    } catch (e) {
+      debugPrint('AdminTenantService: Error solicitando credenciales: $e');
+      return false;
+    }
+  }
+
+  /// Invita o asocia a un médico por correo dentro de un plan grupal (modelo tipo Spotify/Netflix).
+  /// Si ya está registrado, lo vincula al grupo (`id_doctor_administrador`). Si no, retorna enlace de invitación.
+  Future<Map<String, dynamic>> invitarDoctorAPlanGrupo({
+    required String idDoctorAdmin,
+    required String emailInvitado,
+    String plan = 'grupo',
+  }) async {
+    final cleanEmail = emailInvitado.trim().toLowerCase();
+    final client = SupaFlow.client;
+    final existente = await client
+        .from('usuarios')
+        .select('id, nombre')
+        .eq('email', cleanEmail)
+        .maybeSingle();
+
+    if (existente != null) {
+      final docId = existente['id'].toString();
+      await client.from('doctores_tenants').upsert({
+        'id_doctor': docId,
+        'id_doctor_administrador': idDoctorAdmin,
+        'plan': plan,
+        'activo': true,
+        'estado_pago': 'al_dia',
+      }, onConflict: 'id_doctor');
+      return {
+        'registrado': true,
+        'mensaje': 'Médico agregado exitosamente a tu plan grupal.',
+      };
+    }
+
+    return {
+      'registrado': false,
+      'inviteUrl': 'https://doctuario.com/?doctor_invite=true&grupo=$idDoctorAdmin',
+      'mensaje': 'El correo aún no está registrado. Comparte este enlace de invitación para que se una a tu plan.',
+    };
+  }
 
   /// Retorna si el usuario actual tiene privilegios de administrador.
   bool esUsuarioAdmin(String? userRole, String? email) {

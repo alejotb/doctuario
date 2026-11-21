@@ -2,20 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../backend/supabase/supabase.dart';
 import '../../flutter_flow/flutter_flow_theme.dart';
+import '../../flutter_flow/flutter_flow_util.dart';
 import '../../appointments/request_appointment/request_appointment_widget.dart';
 import '../../components/skeleton_shimmer.dart';
+import '../../my_account/home/home_widget.dart';
 import '../doctor_share_helper.dart';
 import 'components/doctor_availability_slots_widget.dart';
 
 class DoctorPublicProfileWidget extends StatefulWidget {
   final String idDoctor;
+  final String? alias;
   final String? nombreDoctor;
   final String? especialidadDoctor;
   final String? fotoUrlDoctor;
 
   const DoctorPublicProfileWidget({
     super.key,
-    required this.idDoctor,
+    this.idDoctor = '',
+    this.alias,
     this.nombreDoctor,
     this.especialidadDoctor,
     this.fotoUrlDoctor,
@@ -30,6 +34,7 @@ class DoctorPublicProfileWidget extends StatefulWidget {
 
 class _DoctorPublicProfileWidgetState extends State<DoctorPublicProfileWidget> {
   bool _isLoading = true;
+  late String _resolvedDoctorId;
   UsuariosRow? _doctorUsuario;
   DoctoresRow? _doctorInfo;
   List<DoctorSedesRow> _sedes = [];
@@ -38,28 +43,46 @@ class _DoctorPublicProfileWidgetState extends State<DoctorPublicProfileWidget> {
   @override
   void initState() {
     super.initState();
+    _resolvedDoctorId = widget.idDoctor;
     _cargarDatosDoctor();
   }
 
   Future<void> _cargarDatosDoctor() async {
     setState(() => _isLoading = true);
     try {
+      if (_resolvedDoctorId.isEmpty && widget.alias != null && widget.alias!.trim().isNotEmpty) {
+        final byAlias = await DoctoresTable().queryRows(
+          queryFn: (q) => q.eq('alias', widget.alias!.trim()).limit(1),
+        );
+        if (byAlias.isNotEmpty) {
+          _doctorInfo = byAlias.first;
+          _resolvedDoctorId = byAlias.first.id;
+        }
+      }
+
+      if (_resolvedDoctorId.isEmpty) {
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
+
       final userRows = await UsuariosTable().queryRows(
-        queryFn: (q) => q.eq('id', widget.idDoctor).limit(1),
+        queryFn: (q) => q.eq('id', _resolvedDoctorId).limit(1),
       );
       if (userRows.isNotEmpty) _doctorUsuario = userRows.first;
 
-      final docRows = await DoctoresTable().queryRows(
-        queryFn: (q) => q.eq('id', widget.idDoctor).limit(1),
-      );
-      if (docRows.isNotEmpty) _doctorInfo = docRows.first;
+      if (_doctorInfo == null) {
+        final docRows = await DoctoresTable().queryRows(
+          queryFn: (q) => q.eq('id', _resolvedDoctorId).limit(1),
+        );
+        if (docRows.isNotEmpty) _doctorInfo = docRows.first;
+      }
 
       _sedes = await DoctorSedesTable().queryRows(
-        queryFn: (q) => q.eq('id_doctor', widget.idDoctor),
+        queryFn: (q) => q.eq('id_doctor', _resolvedDoctorId),
       );
 
       _horarios = await HorariosDisponibilidadTable().queryRows(
-        queryFn: (q) => q.eq('id_doctor', widget.idDoctor).eq('activo', true),
+        queryFn: (q) => q.eq('id_doctor', _resolvedDoctorId).eq('activo', true),
       );
     } catch (e) {
       debugPrint('Error cargando perfil público: $e');
@@ -69,13 +92,14 @@ class _DoctorPublicProfileWidgetState extends State<DoctorPublicProfileWidget> {
   }
 
   void _irAAgendarCita({DateTime? fechaHora, String? idSede, String? modalidad}) {
+    if (_resolvedDoctorId.isEmpty) return;
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => RequestAppointmentWidget(
-          idDoctor: widget.idDoctor,
+          idDoctor: _resolvedDoctorId,
           nombreDoctor: _doctorUsuario?.nombre ?? widget.nombreDoctor ?? 'Doctor',
-          especialidadDoctor: _doctorInfo?.especialidad ?? widget.especialidadDoctor ?? 'Medicina General',
+          especialidadDoctor: _doctorInfo?.especialidad ?? widget.especialidadDoctor ?? 'Especialista',
           fechaHoraInicial: fechaHora,
           idSedeInicial: idSede,
           modalidadInicial: modalidad,
@@ -337,13 +361,24 @@ class _DoctorPublicProfileWidgetState extends State<DoctorPublicProfileWidget> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Volver',
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              context.goNamed(HomeWidget.routeName);
+            }
+          },
+        ),
         title: Text('Perfil del Especialista', style: GoogleFonts.mooli(fontWeight: FontWeight.bold, fontSize: 16)),
         elevation: 0.5,
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         foregroundColor: FlutterFlowTheme.of(context).primaryText,
         actions: [
           IconButton(
-            tooltip: 'Compartir',
+            tooltip: 'Compartir Perfil',
             icon: const Icon(Icons.share_rounded, color: Color(0xFF0284C7)),
             onPressed: _abrirModalCompartir,
           ),
@@ -380,7 +415,7 @@ class _DoctorPublicProfileWidgetState extends State<DoctorPublicProfileWidget> {
 
                   // COMPONENTE VIVO DE DISPONIBILIDAD Y CUPOS (PRÓXIMOS 7 DÍAS)
                   DoctorAvailabilitySlotsWidget(
-                    idDoctor: widget.idDoctor,
+                    idDoctor: _resolvedDoctorId,
                     sedes: _sedes,
                     horarios: _horarios,
                     onSeleccionarCita: ({required fechaHora, required idSede, required modalidadAtencion}) {
@@ -403,35 +438,20 @@ class _DoctorPublicProfileWidgetState extends State<DoctorPublicProfileWidget> {
           ],
         ),
         child: SafeArea(
-          child: Row(
-            children: [
-              Container(
-                decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(12)),
-                child: IconButton(
-                  tooltip: 'Compartir Perfil',
-                  icon: const Icon(Icons.share_rounded, color: Color(0xFF0284C7)),
-                  onPressed: _abrirModalCompartir,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0284C7),
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size.fromHeight(48),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 1,
-                  ),
-                  onPressed: () => _irAAgendarCita(),
-                  icon: const Icon(Icons.calendar_month_rounded, size: 20),
-                  label: Text(
-                    'Agendar Cita Médica',
-                    style: GoogleFonts.mooli(fontSize: 15, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0284C7),
+              foregroundColor: Colors.white,
+              minimumSize: const Size.fromHeight(48),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 1,
+            ),
+            onPressed: () => _irAAgendarCita(),
+            icon: const Icon(Icons.calendar_month_rounded, size: 20),
+            label: Text(
+              'Agendar Cita Médica',
+              style: GoogleFonts.mooli(fontSize: 15, fontWeight: FontWeight.bold),
+            ),
           ),
         ),
       ),

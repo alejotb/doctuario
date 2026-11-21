@@ -275,8 +275,28 @@ class PatientInBoxCard extends StatelessWidget {
                       style: TextStyle(fontSize: 11.5, color: Colors.amber.shade900),
                     ),
                   )
-                else
-                  Column(children: historiasPreviasPaciente.take(2).map((h) => _buildConsultaPreviaItem(h, isEs)).toList()),
+                else ...[
+                  Builder(
+                    builder: (ctx) {
+                      final seenKeys = <String>{};
+                      final unicas = <HistoriasClinicasRow>[];
+                      for (final h in historiasPreviasPaciente) {
+                        final key = (h.idCita != null && h.idCita!.isNotEmpty)
+                            ? 'cita_${h.idCita}'
+                            : 'id_${h.id}';
+                        if (seenKeys.add(key)) {
+                          unicas.add(h);
+                        }
+                      }
+                      return Column(
+                        children: unicas
+                            .take(2)
+                            .map((h) => _buildConsultaPreviaItem(ctx, h, isEs))
+                            .toList(),
+                      );
+                    },
+                  ),
+                ],
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
@@ -397,26 +417,130 @@ class PatientInBoxCard extends StatelessWidget {
         ),
       );
 
-  Widget _buildConsultaPreviaItem(HistoriasClinicasRow h, bool isEs) {
+  Widget _buildConsultaPreviaItem(
+      BuildContext context, HistoriasClinicasRow h, bool isEs) {
     final fechaStr = DateFormat('dd/MM/yyyy').format(h.createdAt);
-    return Container(
-      margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFE2E8F0))),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('${isEs ? "Consulta del" : "Visit on"} $fechaStr', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0284C7))),
-              if (h.diagnostico != null && h.diagnostico!.isNotEmpty)
-                Text(h.diagnostico!, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey.shade700)),
+    final diag = (h.diagnostico ?? '').trim();
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Row(
+              children: [
+                const Icon(Icons.history_edu_rounded,
+                    color: Color(0xFF0284C7), size: 22),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '${isEs ? "Consulta del" : "Visit on"} $fechaStr',
+                    style: GoogleFonts.mooli(
+                        fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (h.motivoConsulta?.isNotEmpty ?? false) ...[
+                    Text(isEs ? 'Motivo:' : 'Reason:',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 12)),
+                    Text(h.motivoConsulta!,
+                        style: const TextStyle(fontSize: 13)),
+                    const SizedBox(height: 8),
+                  ],
+                  if (h.sintomas?.isNotEmpty ?? false) ...[
+                    Text(isEs ? 'Síntomas:' : 'Symptoms:',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 12)),
+                    Text(h.sintomas!, style: const TextStyle(fontSize: 13)),
+                    const SizedBox(height: 8),
+                  ],
+                  if (h.examenFisico?.isNotEmpty ?? false) ...[
+                    Text(isEs ? 'Examen Físico:' : 'Physical Exam:',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 12)),
+                    Text(h.examenFisico!, style: const TextStyle(fontSize: 13)),
+                    const SizedBox(height: 8),
+                  ],
+                  if (diag.isNotEmpty) ...[
+                    Text(isEs ? 'Diagnóstico:' : 'Diagnosis:',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 12)),
+                    Text(diag,
+                        style: const TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 8),
+                  ],
+                  if (h.tratamiento?.isNotEmpty ?? false) ...[
+                    Text(isEs ? 'Tratamiento:' : 'Treatment:',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 12)),
+                    Text(h.tratamiento!, style: const TextStyle(fontSize: 13)),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: Text(isEs ? 'Cerrar' : 'Close'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0284C7),
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  onVerHistoriaCompleta();
+                },
+                child: Text(isEs ? 'Ver Historia Completa' : 'Full History'),
+              ),
             ],
           ),
-          if (h.sintomas != null && h.sintomas!.isNotEmpty) Text('• ${isEs ? "Síntomas" : "Symptoms"}: ${h.sintomas!}', style: TextStyle(fontSize: 11, color: Colors.grey.shade800)),
-          if (h.tratamiento != null && h.tratamiento!.isNotEmpty) Text('• ${isEs ? "Tratamiento" : "Treatment"}: ${h.tratamiento!}', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
-        ],
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.description_outlined,
+                size: 15, color: Color(0xFF0284C7)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                diag.isNotEmpty
+                    ? '${isEs ? "Consulta del" : "Visit on"} $fechaStr • $diag'
+                    : '${isEs ? "Consulta del" : "Visit on"} $fechaStr',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            const Icon(Icons.open_in_new_rounded,
+                size: 13, color: Color(0xFF64748B)),
+          ],
+        ),
       ),
     );
   }

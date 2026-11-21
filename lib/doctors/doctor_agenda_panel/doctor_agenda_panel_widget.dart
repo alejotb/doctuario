@@ -49,6 +49,7 @@ class _DoctorAgendaPanelWidgetState extends State<DoctorAgendaPanelWidget> {
   CitasRow? _citaSeleccionada; UsuariosRow? _pacienteSeleccionado; PacientesRow? _pacienteDetalleSeleccionado;
   List<HistoriasClinicasRow> _historiasPreviasPaciente = []; List<ExamenesMedicosRow> _examenesPendientes = [];
   Map<String, UsuariosRow> _pacientesExamenesMap = {}; String _filtroEstado = 'todos';
+  RealtimeChannel? _citasChannel;
 
   @override
   void initState() {
@@ -58,6 +59,27 @@ class _DoctorAgendaPanelWidgetState extends State<DoctorAgendaPanelWidget> {
     _inicioSemana = _calcularInicioSemana(_fechaSeleccionada);
     I18nService.instance.addListener(_onLocaleChanged);
     _cargarDatos();
+    _suscribirRealtimeCitas();
+  }
+
+  void _suscribirRealtimeCitas() {
+    if (widget.idDoctor.isEmpty) return;
+    _citasChannel = SupaFlow.client
+        .channel('doc-citas-${widget.idDoctor}')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'citas',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'id_doctor',
+            value: widget.idDoctor,
+          ),
+          callback: (_) {
+            if (mounted) _cargarDatos();
+          },
+        )
+        .subscribe();
   }
 
   void _onLocaleChanged() {
@@ -66,6 +88,10 @@ class _DoctorAgendaPanelWidgetState extends State<DoctorAgendaPanelWidget> {
 
   @override
   void dispose() {
+    if (_citasChannel != null) {
+      SupaFlow.client.removeChannel(_citasChannel!);
+      _citasChannel = null;
+    }
     I18nService.instance.removeListener(_onLocaleChanged);
     super.dispose();
   }
@@ -199,25 +225,11 @@ class _DoctorAgendaPanelWidgetState extends State<DoctorAgendaPanelWidget> {
         _sedeSeleccionadaId = null;
       }
 
-      final docClient = DualDatabaseConfig.instance.doctorClient;
-      final doctorIds = <String>{widget.idDoctor};
-      for (final s in _sedes) {
-        if (s.idDoctor != null && s.idDoctor!.isNotEmpty) doctorIds.add(s.idDoctor!);
-      }
-      try {
-        final docRowsDb = await docClient.from('doctores').select('id');
-        for (final d in (docRowsDb as List)) {
-          final did = d['id']?.toString();
-          if (did != null && did.isNotEmpty) doctorIds.add(did);
-        }
-      } catch (_) {}
-      final doctorIdsList = doctorIds.toList();
-
       final finSemana = _inicioSemana.add(const Duration(days: 7, seconds: -1));
       _citasDeLaSemana = await CitasTable().queryRows(
         queryFn: (q) {
           var query = q
-              .inFilter('id_doctor', doctorIdsList)
+              .eq('id_doctor', widget.idDoctor)
               .gte('fecha_hora', _inicioSemana.toUtc().toIso8601String())
               .lte('fecha_hora', finSemana.toUtc().toIso8601String())
               .neq('estado', 'cancelada');
@@ -232,7 +244,7 @@ class _DoctorAgendaPanelWidgetState extends State<DoctorAgendaPanelWidget> {
       _citasDelDia = await CitasTable().queryRows(
         queryFn: (q) {
           var query = q
-              .inFilter('id_doctor', doctorIdsList)
+              .eq('id_doctor', widget.idDoctor)
               .gte('fecha_hora', inicioDia.toUtc().toIso8601String())
               .lte('fecha_hora', finDia.toUtc().toIso8601String())
               .neq('estado', 'cancelada');

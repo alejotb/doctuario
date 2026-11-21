@@ -213,6 +213,7 @@ GoRouter createRouter(
           path: DoctorPublicProfileWidget.routePath,
           builder: (_, params) => DoctorPublicProfileWidget(
             idDoctor: params.getParam('idDoctor', ParamType.String) ?? '',
+            alias: params.getParam('alias', ParamType.String),
             nombreDoctor: params.getParam('nombreDoctor', ParamType.String),
             especialidadDoctor: params.getParam('especialidadDoctor', ParamType.String),
             fotoUrlDoctor: params.getParam('fotoUrlDoctor', ParamType.String),

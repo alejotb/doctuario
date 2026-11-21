@@ -4,13 +4,46 @@ import 'package:url_launcher/url_launcher.dart';
 import '../backend/supabase/supabase.dart';
 
 class DoctorShareHelper {
-  /// Construye el enlace exclusivo de agendamiento directo para un doctor.
-  static String generarEnlaceExclusivo(String idDoctor) {
+  /// Construye el enlace exclusivo de agendamiento directo para un doctor usando su alias público (sin exponer UUID).
+  static String generarEnlaceExclusivo(String idDoctor, {String? alias}) {
     final base = kIsWeb && Uri.base.hasAuthority
         ? '${Uri.base.scheme}://${Uri.base.authority}'
         : 'https://mediconnect.app';
+    if (alias != null && alias.trim().isNotEmpty) {
+      return '$base/doctorPublicProfile?alias=${Uri.encodeComponent(alias.trim())}';
+    }
     return '$base/doctorPublicProfile?idDoctor=${Uri.encodeComponent(idDoctor)}';
   }
+
+  /// Convierte cualquier cadena de hora o timestamp (ej. "08:00:00" o "1970-01-01 08:00:00")
+  /// a un formato corto legible (ej. "8:00 AM" / "5:00 PM").
+  static String formatearHoraCorta(dynamic rawHora, {String fallback = '8:00 AM'}) {
+    if (rawHora == null) return fallback;
+    final s = rawHora.toString().trim();
+    if (s.isEmpty) return fallback;
+
+    int? hour;
+    int minute = 0;
+
+    final parsedDt = DateTime.tryParse(s);
+    if (parsedDt != null) {
+      hour = parsedDt.hour;
+      minute = parsedDt.minute;
+    } else {
+      final match = RegExp(r'(\d{1,2}):(\d{2})').firstMatch(s);
+      if (match != null) {
+        hour = int.tryParse(match.group(1)!);
+        minute = int.tryParse(match.group(2)!) ?? 0;
+      }
+    }
+
+    if (hour == null) return fallback;
+    final period = hour >= 12 ? 'PM' : 'AM';
+    final h12 = hour % 12 == 0 ? 12 : hour % 12;
+    final minStr = minute.toString().padLeft(2, '0');
+    return '$h12:$minStr $period';
+  }
+
   /// Genera un texto atractivo y completo con el perfil, especialidad, sedes y horarios del doctor
   static Future<String> generarTextoCompartirDoctor({
     required UsuariosRow doctorUsuario,
@@ -45,15 +78,15 @@ class DoctorShareHelper {
           buffer.writeln('   Teléfono: ${sede.telefonoContacto}');
         }
 
-        // Horarios de esta sede
+        // Horarios de esta sede con formato limpio sin segundos ni fechas ISO
         final horariosSede =
             horarios.where((h) => h.idSede == sede.id && (h.activo ?? true)).toList();
         if (horariosSede.isNotEmpty) {
           buffer.writeln('   ⏰ *Horarios de Atención:*');
           for (final h in horariosSede) {
             final diaStr = nombreDia(h.diaSemana ?? 1);
-            final inicio = h.horaInicio?.toString() ?? '08:00';
-            final fin = h.horaFin?.toString() ?? '12:00';
+            final inicio = formatearHoraCorta(h.horaInicio, fallback: '8:00 AM');
+            final fin = formatearHoraCorta(h.horaFin, fallback: '12:00 PM');
             final modalidad = h.modalidadAtencion == 'orden_llegada'
                 ? '(Por orden de llegada)'
                 : '(Cita con hora previa)';
@@ -64,7 +97,7 @@ class DoctorShareHelper {
       }
     }
 
-    final enlace = generarEnlaceExclusivo(doctorInfo.id);
+    final enlace = generarEnlaceExclusivo(doctorInfo.id, alias: doctorInfo.alias);
     buffer.writeln('📲 _Agenda tu cita médica directamente aquí:_');
     buffer.writeln(enlace);
     return buffer.toString();

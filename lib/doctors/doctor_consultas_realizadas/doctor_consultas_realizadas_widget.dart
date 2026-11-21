@@ -71,12 +71,12 @@ class _DoctorConsultasRealizadasWidgetState
           .or('es_borrador.eq.true,estado.eq.en_consulta')
           .order('fecha_hora', ascending: false);
 
-      // 2. Cargar citas completadas
+      // 2. Cargar citas completadas / atendidas
       final realizadasData = await docClient
           .from('citas')
           .select()
           .eq('id_doctor', widget.idDoctor)
-          .eq('estado', 'completada')
+          .inFilter('estado', ['atendida', 'completada'])
           .order('fecha_hora', ascending: false)
           .limit(100);
 
@@ -96,16 +96,30 @@ class _DoctorConsultasRealizadasWidgetState
         if (c.idPaciente != null) pacienteIds.add(c.idPaciente!);
       }
 
-      // 3. Cargar datos de pacientes asociados
+      // 3. Cargar datos de pacientes asociados (incluyendo pacientes manuales no registrados en usuarios)
       if (pacienteIds.isNotEmpty) {
+        final idsList = pacienteIds.toList();
+        try {
+          final pacsData = await docClient
+              .from('pacientes')
+              .select('id, nombre, cedula, telefono, ciudad_origen')
+              .inFilter('id', idsList);
+          for (final p in pacsData) {
+            final row = UsuariosRow(Map<String, dynamic>.from(p));
+            _pacientesMap[row.id] = row;
+          }
+        } catch (_) {}
         try {
           final usersData = await docClient
               .from('usuarios')
-              .select('id, nombre, cedula, telefono, ciudad_origen')
-              .filter('id', 'in', pacienteIds.toList());
+              .select('id, nombre, cedula, telefono, ciudad_origen, foto_url')
+              .inFilter('id', idsList);
           for (final u in usersData) {
-            final row = UsuariosRow(u);
-            _pacientesMap[row.id] = row;
+            final row = UsuariosRow(Map<String, dynamic>.from(u));
+            final prev = _pacientesMap[row.id];
+            if (prev == null || (prev.nombre?.trim().isEmpty ?? true)) {
+              _pacientesMap[row.id] = row;
+            }
           }
         } catch (_) {}
       }

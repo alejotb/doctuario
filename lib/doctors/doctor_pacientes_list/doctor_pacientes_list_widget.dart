@@ -110,42 +110,57 @@ class _DoctorPacientesListWidgetState extends State<DoctorPacientesListWidget> {
         }
       }
 
-      // 4. Consultar los datos directamente desde la tabla usuarios y complementar con pacientes
+      // 4. Consultar únicamente los pacientes asociados a este doctor (aislamiento estricto)
       final Map<String, Map<String, dynamic>> pacienteMap = {};
       if (pacienteIds.isNotEmpty) {
+        final idsList = pacienteIds.toList();
         try {
-          final usrs = await UsuariosTable().queryRows(queryFn: (q) => q.inFilter('id', pacienteIds.toList()));
-          for (final u in usrs) {
-            if (u.id != widget.idDoctor) pacienteMap[u.id] = Map<String, dynamic>.from(u.data);
-          }
-        } catch (_) {}
-      }
-      try {
-        final resPac = await docClient.from('pacientes').select();
-        for (final item in (resPac as List)) {
-          final m = Map<String, dynamic>.from(item);
-          final pid = m['id']?.toString() ?? '';
-          if (pid.isNotEmpty && pid != widget.idDoctor) {
-            if (pacienteMap.containsKey(pid)) {
-              if (m['tipo_sangre'] != null) pacienteMap[pid]!['tipo_sangre'] = m['tipo_sangre'];
-              if (m['fecha_nacimiento'] != null) pacienteMap[pid]!['fecha_nacimiento'] = m['fecha_nacimiento'];
-            } else {
+          final resPac = await docClient
+              .from('pacientes')
+              .select()
+              .inFilter('id', idsList);
+          for (final item in (resPac as List)) {
+            final m = Map<String, dynamic>.from(item);
+            final pid = m['id']?.toString() ?? '';
+            if (pid.isNotEmpty && pid != widget.idDoctor) {
               pacienteMap[pid] = m;
             }
           }
+        } catch (e) {
+          debugPrint('Error leyendo pacientes filtrados: $e');
         }
-      } catch (e) {
-        debugPrint('Error leyendo pacientes: $e');
-      }
 
-      final faltantes = pacienteIds.where((id) => !pacienteMap.containsKey(id) || (pacienteMap[id]?['nombre']?.toString().trim().isEmpty ?? true)).toList();
-      if (faltantes.isNotEmpty) {
         try {
-          final resUsr = await DualDatabaseConfig.instance.patientClient.from('usuarios').select().inFilter('id', faltantes);
-          for (final item in (resUsr as List)) {
-            final m = Map<String, dynamic>.from(item);
-            final uid = m['id']?.toString() ?? '';
-            if (uid.isNotEmpty && uid != widget.idDoctor) pacienteMap[uid] = m;
+          final usrs = await UsuariosTable().queryRows(
+            queryFn: (q) => q.inFilter('id', idsList),
+          );
+          for (final u in usrs) {
+            if (u.id == widget.idDoctor) continue;
+            if (pacienteMap.containsKey(u.id)) {
+              final existing = pacienteMap[u.id]!;
+              if ((existing['nombre']?.toString().trim().isEmpty ?? true) &&
+                  (u.nombre?.trim().isNotEmpty ?? false)) {
+                existing['nombre'] = u.nombre;
+              }
+              if ((existing['cedula']?.toString().trim().isEmpty ?? true) &&
+                  (u.cedula?.trim().isNotEmpty ?? false)) {
+                existing['cedula'] = u.cedula;
+              }
+              if ((existing['telefono']?.toString().trim().isEmpty ?? true) &&
+                  (u.telefono?.trim().isNotEmpty ?? false)) {
+                existing['telefono'] = u.telefono;
+              }
+              if ((existing['ciudad_origen']?.toString().trim().isEmpty ?? true) &&
+                  (u.ciudadOrigen?.trim().isNotEmpty ?? false)) {
+                existing['ciudad_origen'] = u.ciudadOrigen;
+              }
+              if ((existing['foto_url']?.toString().trim().isEmpty ?? true) &&
+                  (u.fotoUrl?.trim().isNotEmpty ?? false)) {
+                existing['foto_url'] = u.fotoUrl;
+              }
+            } else {
+              pacienteMap[u.id] = Map<String, dynamic>.from(u.data);
+            }
           }
         } catch (_) {}
       }

@@ -46,12 +46,68 @@ class DoctorSoloModeDialog extends StatefulWidget {
 
 class _DoctorSoloModeDialogState extends State<DoctorSoloModeDialog> {
   late bool _visibleEnCatalogo;
+  late TextEditingController _aliasCtrl;
+  String? _aliasGuardado;
   bool _guardando = false;
 
   @override
   void initState() {
     super.initState();
     _visibleEnCatalogo = widget.initialVisible;
+    _aliasGuardado = widget.doctorInfo?.alias;
+    _aliasCtrl = TextEditingController(text: _aliasGuardado ?? '');
+  }
+
+  @override
+  void dispose() {
+    _aliasCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _guardarAlias() async {
+    final limpio = _aliasCtrl.text
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9\-_]'), '-');
+    if (limpio.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Ingresa un alias válido (ej. dr-perez).'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    setState(() => _guardando = true);
+    try {
+      await SupaFlow.client
+          .from('doctores')
+          .update({'alias': limpio})
+          .eq('id', widget.idDoctor);
+      if (mounted) {
+        setState(() {
+          _aliasGuardado = limpio;
+          _aliasCtrl.text = limpio;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Alias público actualizado. Tu UUID permanece oculto.'),
+            backgroundColor: Color(0xFF0F766E),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('No se pudo guardar el alias (puede estar en uso): $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _guardando = false);
+    }
   }
 
   Future<void> _actualizarVisibilidad(bool nuevoValor) async {
@@ -69,8 +125,8 @@ class _DoctorSoloModeDialogState extends State<DoctorSoloModeDialog> {
           SnackBar(
             content: Text(
               nuevoValor
-                  ? 'Ahora eres visible en el catálogo público de MediConnect.'
-                  : 'Modo Doctor Solo activado: oculto del catálogo público.',
+                  ? 'Ahora eres visible en el catálogo público de Doctuario.'
+                  : 'Modo Burbuja activado: trabajas en tu consultorio privado oculto del catálogo.',
             ),
             backgroundColor: nuevoValor ? const Color(0xFF10B981) : const Color(0xFF0284C7),
           ),
@@ -89,7 +145,10 @@ class _DoctorSoloModeDialogState extends State<DoctorSoloModeDialog> {
   }
 
   Future<void> _copiarEnlace() async {
-    final enlace = DoctorShareHelper.generarEnlaceExclusivo(widget.idDoctor);
+    final enlace = DoctorShareHelper.generarEnlaceExclusivo(
+      widget.idDoctor,
+      alias: _aliasGuardado,
+    );
     await DoctorShareHelper.copiarAlPortapapeles(enlace);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -104,7 +163,10 @@ class _DoctorSoloModeDialogState extends State<DoctorSoloModeDialog> {
   Future<void> _compartirWhatsApp() async {
     final nombre = widget.doctorUsuario?.nombre ?? 'Especialista';
     final esp = widget.doctorInfo?.especialidad ?? 'Consulta Médica';
-    final enlace = DoctorShareHelper.generarEnlaceExclusivo(widget.idDoctor);
+    final enlace = DoctorShareHelper.generarEnlaceExclusivo(
+      widget.idDoctor,
+      alias: _aliasGuardado,
+    );
     final texto =
         '👨‍⚕️ *Dr(a). $nombre* ($esp)\n📲 Agenda tu cita médica directamente en mi consultorio usando este enlace exclusivo:\n$enlace';
     await DoctorShareHelper.compartirPorWhatsApp(texto);
@@ -117,6 +179,7 @@ class _DoctorSoloModeDialogState extends State<DoctorSoloModeDialog> {
       MaterialPageRoute(
         builder: (_) => DoctorPublicProfileWidget(
           idDoctor: widget.idDoctor,
+          alias: _aliasGuardado,
           nombreDoctor: widget.doctorUsuario?.nombre,
           especialidadDoctor: widget.doctorInfo?.especialidad,
           fotoUrlDoctor: widget.doctorUsuario?.fotoUrl,
@@ -129,7 +192,10 @@ class _DoctorSoloModeDialogState extends State<DoctorSoloModeDialog> {
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     final isEs = I18nService.instance.isSpanish;
-    final enlace = DoctorShareHelper.generarEnlaceExclusivo(widget.idDoctor);
+    final enlace = DoctorShareHelper.generarEnlaceExclusivo(
+      widget.idDoctor,
+      alias: _aliasGuardado,
+    );
     final modoSoloActivo = !_visibleEnCatalogo;
 
     return AlertDialog(
@@ -187,6 +253,38 @@ class _DoctorSoloModeDialogState extends State<DoctorSoloModeDialog> {
                 ),
               ),
               const SizedBox(height: 16),
+              Text(
+                isEs ? 'Tu alias público (protege tu ID interno):' : 'Your public alias (protects your internal ID):',
+                style: GoogleFonts.mooli(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _aliasCtrl,
+                      decoration: InputDecoration(
+                        hintText: 'ej. dr-alejandro-perez',
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: _guardando ? null : _guardarAlias,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0284C7),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: Text(isEs ? 'Guardar' : 'Save', style: const TextStyle(fontSize: 12)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
               Text(
                 isEs ? 'Tu enlace exclusivo de agendamiento:' : 'Your exclusive booking link:',
                 style: GoogleFonts.mooli(fontWeight: FontWeight.bold, fontSize: 13),

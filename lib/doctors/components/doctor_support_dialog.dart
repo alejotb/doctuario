@@ -84,7 +84,7 @@ class _DoctorSupportDialogState extends State<DoctorSupportDialog> {
     try {
       final docClient = DualDatabaseConfig.instance.doctorClient;
 
-      // Intentar registrar ticket en base de datos si existe la tabla
+      // Registrar ticket en base de datos y notificar a administradores
       try {
         await docClient.from('soporte_tickets').insert({
           'id_doctor': widget.idDoctor,
@@ -93,11 +93,30 @@ class _DoctorSupportDialogState extends State<DoctorSupportDialog> {
           'prioridad': _prioridad,
           'asunto': _asuntoController.text.trim(),
           'mensaje': _mensajeController.text.trim(),
+          'estado': 'abierto',
           'created_at': DateTime.now().toUtc().toIso8601String(),
         });
-      } catch (_) {
-        // Fallback silencioso si la tabla no está creada aún
-      }
+
+        final admins = await SupaFlow.client
+            .from('usuarios')
+            .select('id')
+            .inFilter('rol', ['admin', 'administrador']);
+        for (final adm in (admins as List)) {
+          final admId = adm['id']?.toString() ?? '';
+          if (admId.isEmpty) continue;
+          try {
+            await SupaFlow.client.from('notificaciones_citas').insert({
+              'id_usuario': admId,
+              'tipo': 'soporte_ticket',
+              'titulo': '🎫 Nuevo Ticket de Soporte (${_prioridad.toUpperCase()})',
+              'mensaje':
+                  'Dr(a). ${widget.doctorNombre}: ${_asuntoController.text.trim()}',
+              'leido': false,
+              'created_at': DateTime.now().toUtc().toIso8601String(),
+            });
+          } catch (_) {}
+        }
+      } catch (_) {}
 
       if (mounted) {
         Navigator.of(context).pop();

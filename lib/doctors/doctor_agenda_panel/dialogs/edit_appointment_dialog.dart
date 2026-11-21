@@ -46,6 +46,7 @@ class _EditAppointmentDialogState extends State<EditAppointmentDialog> {
   late int _duracion;
   late String _estadoSeleccionado;
   late TextEditingController _notasController;
+  final TextEditingController _motivoCambioController = TextEditingController();
   late bool _esEmergencia;
   late bool _tratoEspecial;
   bool _isSaving = false;
@@ -69,7 +70,21 @@ class _EditAppointmentDialogState extends State<EditAppointmentDialog> {
   @override
   void dispose() {
     _notasController.dispose();
+    _motivoCambioController.dispose();
     super.dispose();
+  }
+
+  bool get _huboCambioHorario {
+    final horaOriginal = widget.cita.fechaHoraEstimadaActual ?? widget.cita.fechaHora;
+    if (horaOriginal == null) return false;
+    final nuevaFechaHora = DateTime(
+      _fechaSeleccionada.year,
+      _fechaSeleccionada.month,
+      _fechaSeleccionada.day,
+      _horaSeleccionada.hour,
+      _horaSeleccionada.minute,
+    );
+    return nuevaFechaHora.difference(horaOriginal).inMinutes.abs() > 2;
   }
 
   Future<void> _guardarCambios() async {
@@ -86,7 +101,7 @@ class _EditAppointmentDialogState extends State<EditAppointmentDialog> {
       if (_estadoSeleccionado == 'cancelada') {
         await AppointmentCancellationService.instance.cancelarCitaIndividual(
           idCita: widget.cita.id,
-          motivo: _notasController.text.trim(),
+          motivo: _motivoCambioController.text.trim(),
           canceladoPorDoctor: true,
           idDoctor: widget.cita.idDoctor,
           idPaciente: widget.cita.idPaciente,
@@ -105,19 +120,16 @@ class _EditAppointmentDialogState extends State<EditAppointmentDialog> {
           matchingRows: (q) => q.eq('id', widget.cita.id),
         );
 
-        if (widget.cita.idDoctor != null) {
-          final horaOriginal = widget.cita.fechaHoraEstimadaActual ?? widget.cita.fechaHora;
-          if (horaOriginal != null && nuevaFechaHora.difference(horaOriginal).inMinutes.abs() > 2) {
-            await AppointmentCancellationService.instance.reprogramarCitaIndividual(
-              idCita: widget.cita.id,
-              nuevaFechaHora: nuevaFechaHora,
-              motivo: _notasController.text.trim(),
-              reprogramadoPorDoctor: true,
-              idDoctor: widget.cita.idDoctor!,
-              idPaciente: widget.cita.idPaciente,
-              duracionMinutos: _duracion,
-            );
-          }
+        if (widget.cita.idDoctor != null && _huboCambioHorario) {
+          await AppointmentCancellationService.instance.reprogramarCitaIndividual(
+            idCita: widget.cita.id,
+            nuevaFechaHora: nuevaFechaHora,
+            motivo: _motivoCambioController.text.trim(),
+            reprogramadoPorDoctor: true,
+            idDoctor: widget.cita.idDoctor!,
+            idPaciente: widget.cita.idPaciente,
+            duracionMinutos: _duracion,
+          );
         }
       }
 
@@ -393,6 +405,24 @@ class _EditAppointmentDialogState extends State<EditAppointmentDialog> {
                     OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
+            if (_estadoSeleccionado == 'cancelada' || _huboCambioHorario) ...[
+              const SizedBox(height: 12),
+              TextField(
+                controller: _motivoCambioController,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  labelText: _estadoSeleccionado == 'cancelada'
+                      ? 'Motivo de cancelación (se enviará al paciente)'
+                      : 'Motivo de reprogramación (se enviará al paciente)',
+                  hintText: _estadoSeleccionado == 'cancelada'
+                      ? 'Ej. Imprevisto médico o cierre de consultorio'
+                      : 'Ej. Reajuste de horario en consultorio',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ],
 
             const SizedBox(height: 20),
 

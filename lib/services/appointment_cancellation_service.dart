@@ -38,22 +38,10 @@ class AppointmentCancellationService {
         'fecha_hora_estimada_actual': null,
       };
 
-      // 1. Actualizar en Base Central
-      final centralClient = DualDatabaseConfig.instance.patientClient;
-      await centralClient.from('citas').update(updateData).eq('id', idCita);
+      final client = SupaFlow.client;
+      await client.from('citas').update(updateData).eq('id', idCita);
 
-      // 2. Replicar en Base del Doctor si existe tenant
-      if (idDoctor != null && idDoctor.isNotEmpty) {
-        try {
-          await DualDatabaseConfig.instance.consultarYConectarTenantDoctor(idDoctor);
-          final doctorClient = DualDatabaseConfig.instance.doctorClient;
-          await doctorClient.from('citas').update(updateData).eq('id', idCita);
-        } catch (e) {
-          debugPrint('Nota replicando cancelación en Base Doctor: $e');
-        }
-      }
-
-      // 3. Notificar a la contraparte
+      // Notificar a la contraparte
       if (canceladoPorDoctor) {
         await _notificarPaciente(
           idPaciente: idPaciente,
@@ -91,10 +79,10 @@ class AppointmentCancellationService {
     int duracionMinutos = 30,
   }) async {
     final nuevaFechaIso = nuevaFechaHora.toUtc().toIso8601String();
-    final centralClient = DualDatabaseConfig.instance.patientClient;
+    final client = SupaFlow.client;
 
     // Verificar si el nuevo bloque está libre (excluyendo la misma cita)
-    final colision = await centralClient
+    final colision = await client
         .from('citas')
         .select('id')
         .eq('id_doctor', idDoctor)
@@ -126,19 +114,9 @@ class AppointmentCancellationService {
         'duracion_minutos': duracionMinutos,
       };
 
-      // 1. Actualizar en Base Central
-      await centralClient.from('citas').update(updateData).eq('id', idCita);
+      await client.from('citas').update(updateData).eq('id', idCita);
 
-      // 2. Replicar en Base del Doctor
-      try {
-        await DualDatabaseConfig.instance.consultarYConectarTenantDoctor(idDoctor);
-        final docClient = DualDatabaseConfig.instance.doctorClient;
-        await docClient.from('citas').update(updateData).eq('id', idCita);
-      } catch (e) {
-        debugPrint('Nota replicando reprogramación en Base Doctor: $e');
-      }
-
-      // 3. Notificar
+      // Notificar
       final horaFormato = DateFormat('hh:mm a').format(nuevaFechaHora);
       final fechaFormato = DateFormat('dd/MM/yyyy').format(nuevaFechaHora);
 
@@ -174,7 +152,7 @@ class AppointmentCancellationService {
     required DateTime fecha,
     required String motivo,
   }) async {
-    final centralClient = DualDatabaseConfig.instance.patientClient;
+    final client = SupaFlow.client;
     final inicioDia = DateTime(fecha.year, fecha.month, fecha.day, 0, 0, 0).toUtc().toIso8601String();
     final finDia = DateTime(fecha.year, fecha.month, fecha.day, 23, 59, 59).toUtc().toIso8601String();
 
@@ -183,14 +161,15 @@ class AppointmentCancellationService {
         : 'Cierre de agenda por imprevistos médicos o personales del doctor.';
 
     // Consultar citas no canceladas ni atendidas del día
-    final List<dynamic> citas = await centralClient
+    final List<dynamic> citas = await client
         .from('citas')
         .select('id, id_paciente, fecha_hora')
         .eq('id_doctor', idDoctor)
         .gte('fecha_hora', inicioDia)
         .lte('fecha_hora', finDia)
         .neq('estado', 'cancelada')
-        .neq('estado', 'atendida');
+        .neq('estado', 'atendida')
+        .neq('estado', 'completada');
 
     int canceladas = 0;
     for (final c in citas) {
@@ -220,18 +199,19 @@ class AppointmentCancellationService {
     required DateTime fechaDestino,
     required String motivo,
   }) async {
-    final centralClient = DualDatabaseConfig.instance.patientClient;
+    final client = SupaFlow.client;
     final inicioDia = DateTime(fechaOrigen.year, fechaOrigen.month, fechaOrigen.day, 0, 0, 0).toUtc().toIso8601String();
     final finDia = DateTime(fechaOrigen.year, fechaOrigen.month, fechaOrigen.day, 23, 59, 59).toUtc().toIso8601String();
 
-    final List<dynamic> citas = await centralClient
+    final List<dynamic> citas = await client
         .from('citas')
         .select('id, id_paciente, fecha_hora, duracion_minutos')
         .eq('id_doctor', idDoctor)
         .gte('fecha_hora', inicioDia)
         .lte('fecha_hora', finDia)
         .neq('estado', 'cancelada')
-        .neq('estado', 'atendida');
+        .neq('estado', 'atendida')
+        .neq('estado', 'completada');
 
     int reprogramadas = 0;
     for (final c in citas) {

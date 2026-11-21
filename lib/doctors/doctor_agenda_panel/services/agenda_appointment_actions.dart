@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
+import '/services/appointment_cancellation_service.dart';
 import '/services/emergency_appointment_service.dart';
 import '/services/appointment_sync_service.dart';
 
 /// Servicio de acciones de gestión clínica para citas de la agenda del doctor.
 /// Coordina la actualización del estado local del consultorio y la sincronización
-/// bilateral con la base de datos central de ProntuDoc / MediConnect.
+/// con la base de datos única de ProntuDoc / MediConnect.
 class AgendaAppointmentActions {
   AgendaAppointmentActions._();
 
@@ -70,7 +71,6 @@ class AgendaAppointmentActions {
         matchingRows: (q) => q.eq('id', cita.id),
       );
 
-      // Sincronizar estado en BD Central si aplica
       if (cita.idDoctor != null) {
         await AppointmentSyncService.instance.actualizarEstadoCita(
           idCita: cita.id,
@@ -95,13 +95,85 @@ class AgendaAppointmentActions {
     }
   }
 
-  /// Cambia el estado de una cita médica y asegura la sincronización
-  /// tanto en la base de datos local del doctor como en la base central.
+  /// Solicita el motivo de cancelación al doctor/secretaria y cancela la cita notificando al paciente.
+  static Future<bool> pedirMotivoYCancelar({
+    required BuildContext context,
+    required CitasRow cita,
+  }) async {
+    final motivoCtrl = TextEditingController();
+    final String? motivoConfirmado = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Cancelar Cita', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Indica el motivo de la cancelación para notificar al paciente:',
+              style: TextStyle(fontSize: 13, color: Color(0xFF475569)),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: motivoCtrl,
+              maxLines: 2,
+              decoration: InputDecoration(
+                hintText: 'Ej. Reajuste de horario o imprevisto médico',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(null),
+            child: const Text('Volver'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(motivoCtrl.text.trim()),
+            child: const Text('Confirmar Cancelación'),
+          ),
+        ],
+      ),
+    );
+    motivoCtrl.dispose();
+
+    if (motivoConfirmado == null) return false;
+
+    final ok = await AppointmentCancellationService.instance.cancelarCitaIndividual(
+      idCita: cita.id,
+      motivo: motivoConfirmado,
+      canceladoPorDoctor: true,
+      idDoctor: cita.idDoctor,
+      idPaciente: cita.idPaciente,
+    );
+
+    if (ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('❌ Cita cancelada y paciente notificado.'),
+          backgroundColor: Color(0xFFDC2626),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+    return ok;
+  }
+
+  /// Cambia el estado de una cita médica y asegura la sincronización en la base única.
   static Future<bool> cambiarEstado({
     required BuildContext context,
     required CitasRow cita,
     required String nuevoEstado,
   }) async {
+    if (nuevoEstado.toLowerCase() == 'cancelada') {
+      return pedirMotivoYCancelar(context: context, cita: cita);
+    }
     try {
       final data = <String, dynamic>{'estado': nuevoEstado};
       if (nuevoEstado == 'en_espera' && (cita.llegadaConfirmada != true)) {
@@ -109,13 +181,11 @@ class AgendaAppointmentActions {
         data['hora_llegada'] = DateTime.now().toIso8601String();
       }
 
-      // 1. Actualizar base del doctor / clínica
       await CitasTable().update(
         data: data,
         matchingRows: (q) => q.eq('id', cita.id),
       );
 
-      // 2. Replicar cambio a la base de datos central
       if (cita.idDoctor != null) {
         await AppointmentSyncService.instance.actualizarEstadoCita(
           idCita: cita.id,
@@ -153,15 +223,14 @@ class AgendaAppointmentActions {
     );
   }
 
-  /// Rechazo o cancelación de cita solicitada en línea
+  /// Rechazo o cancelación de cita solicitada en línea con motivo
   static Future<bool> rechazarCitaOnline({
     required BuildContext context,
     required CitasRow cita,
   }) async {
-    return cambiarEstado(
+    return pedirMotivoYCancelar(
       context: context,
       cita: cita,
-      nuevoEstado: 'cancelada',
     );
   }
 

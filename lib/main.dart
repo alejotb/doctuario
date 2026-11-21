@@ -16,6 +16,7 @@ import 'services/i18n_service.dart';
 import 'services/notifications_service.dart';
 import 'services/patient_location_service.dart';
 import 'admin/admin_doctor_tenants_modal_widget.dart';
+import 'admin/admin_support_tickets_modal.dart';
 import 'components/app_navigation_shell.dart';
 import 'components/skeleton_shimmer.dart';
 import 'doctors/doctor_secretaries/doctor_secretaries_widget.dart';
@@ -405,6 +406,7 @@ class _NavBarPageState extends State<NavBarPage> {
       final navDefs = [NavBarItemDef(Icons.dashboard_rounded, isEs ? 'Panel' : 'Dashboard'), NavBarItemDef(Icons.admin_panel_settings_rounded, isEs ? 'Consultorios' : 'Tenants'), NavBarItemDef(Icons.medical_services_outlined, isEs ? 'Doctores' : 'Doctors'), NavBarItemDef(Icons.person_outline_rounded, isEs ? 'Mi Cuenta' : 'My Account')];
       final idx = tabs.keys.toList().indexOf(_currentPageName == 'Perfil' ? 'MyAccount' : _currentPageName);
       return buildShell(body: _currentPage ?? tabs.values.toList()[idx >= 0 ? idx : 0], navDefs: navDefs, currentIndex: idx >= 0 ? idx : 0, onTap: (i) => _navigateToTab(tabs.keys.toList()[i], 'administrador'), roleBadge: isEs ? 'Administrador' : 'Administrator', actions: [
+        IconButton(icon: const Icon(Icons.support_agent_rounded, color: Color(0xFF0F766E), size: 22), tooltip: isEs ? 'Tickets de Soporte' : 'Support Tickets', onPressed: () => AdminSupportTicketsModal.show(context)),
         IconButton(icon: const Icon(Icons.domain_verification_rounded, color: Color(0xFF0284C7), size: 22), tooltip: isEs ? 'Aprobación de Consultorios' : 'Tenants Approval', onPressed: () => AdminDoctorTenantsModalWidget.show(context)),
       ]);
     }

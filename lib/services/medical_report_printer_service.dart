@@ -10,7 +10,8 @@ class MedicalReportPrinterService {
   static final MedicalReportPrinterService instance =
       MedicalReportPrinterService._();
 
-  /// Muestra una vista previa lista para imprimir o compartir
+  /// Muestra una vista previa lista para imprimir o compartir.
+  /// Permite elegir entre Hoja Completa o Media Hoja y entre formato por Bloques o Texto Libre.
   Future<void> mostrarReporteImprimible({
     required BuildContext context,
     required String tituloDocumento,
@@ -19,121 +20,260 @@ class MedicalReportPrinterService {
     required DoctoresRow? doctorInfo,
     String? logoUrl,
     required Widget contenidoCuerpo,
+    String? textoLibreInicial,
     String? notasPie,
   }) async {
+    DoctoresRow? docInfoEfectivo = doctorInfo;
+    UsuariosRow? docUsrEfectivo = doctorUsuario;
+
+    // Si faltan datos de especialidad o logo_url, consultarlos directamente del doctor autenticado o indicado
+    final docId = docInfoEfectivo?.id ??
+        docUsrEfectivo?.id ??
+        SupaFlow.client.auth.currentUser?.id;
+    if (docId != null &&
+        docId.isNotEmpty &&
+        ((docInfoEfectivo?.logoUrl?.trim().isEmpty ?? true) ||
+            (docInfoEfectivo?.especialidad?.trim().isEmpty ?? true))) {
+      try {
+        final res = await SupaFlow.client
+            .from('doctores')
+            .select()
+            .eq('id', docId)
+            .maybeSingle();
+        if (res != null) {
+          docInfoEfectivo = DoctoresRow(Map<String, dynamic>.from(res));
+        }
+      } catch (_) {}
+    }
+
+    if (docUsrEfectivo == null && docId != null && docId.isNotEmpty) {
+      try {
+        final uRes = await SupaFlow.client
+            .from('usuarios')
+            .select()
+            .eq('id', docId)
+            .maybeSingle();
+        if (uRes != null) {
+          docUsrEfectivo = UsuariosRow(Map<String, dynamic>.from(uRes));
+        }
+      } catch (_) {}
+    }
+
+    final effectiveLogo = (logoUrl != null && logoUrl.trim().isNotEmpty)
+        ? logoUrl.trim()
+        : ((docInfoEfectivo?.logoUrl?.trim().isNotEmpty ?? false)
+            ? docInfoEfectivo!.logoUrl!.trim()
+            : null);
+
+    bool esMediaHoja = false;
+    bool usarTextoLibre = false;
+    final textoLibreCtrl = TextEditingController(
+      text: textoLibreInicial ?? '',
+    );
+
+    if (!context.mounted) return;
     await showDialog(
       context: context,
       builder: (dialogCtx) {
-        return Dialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Container(
-            width: 650,
-            constraints: const BoxConstraints(maxHeight: 750),
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Barra de herramientas superior (Imprimir / Copiar / Cerrar)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            final anchoHoja = esMediaHoja ? 460.0 : 650.0;
+            final paddingHoja = esMediaHoja ? 16.0 : 24.0;
+
+            return Dialog(
+              insetPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              child: Container(
+                width: 680,
+                constraints: const BoxConstraints(maxHeight: 780),
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // Barra de herramientas superior (Imprimir / Cerrar)
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Icon(Icons.print_outlined,
-                            color: Color(0xFF0284C7), size: 24),
-                        const SizedBox(width: 8),
-                        Text(
-                          tituloDocumento,
-                          style: GoogleFonts.mooli(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF0F172A),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              const Icon(Icons.print_outlined,
+                                  color: Color(0xFF0284C7), size: 22),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  tituloDocumento,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.mooli(
+                                    fontSize: 15.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextButton.icon(
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      esMediaHoja
+                                          ? '📄 Preparando impresión en Media Hoja...'
+                                          : '📄 Preparando impresión en Hoja Completa...',
+                                    ),
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.print, size: 18),
+                              label: const Text('Imprimir'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: const Color(0xFF0284C7),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => Navigator.of(dialogCtx).pop(),
+                              icon: const Icon(Icons.close, color: Colors.grey),
+                              tooltip: 'Cerrar',
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    Row(
+                    const SizedBox(height: 8),
+                    // Controles de tamaño de hoja y formato (Bloques vs Texto libre)
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        TextButton.icon(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                    '📄 Enviando a la impresora del sistema...'),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
+                        ChoiceChip(
+                          label: const Text('Hoja Completa',
+                              style: TextStyle(fontSize: 11.5)),
+                          selected: !esMediaHoja,
+                          onSelected: (v) {
+                            if (v) setDialogState(() => esMediaHoja = false);
                           },
-                          icon: const Icon(Icons.print, size: 18),
-                          label: const Text('Imprimir'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFF0284C7),
-                          ),
                         ),
-                        IconButton(
-                          onPressed: () => Navigator.of(dialogCtx).pop(),
-                          icon: const Icon(Icons.close, color: Colors.grey),
-                          tooltip: 'Cerrar',
+                        ChoiceChip(
+                          label: const Text('Media Hoja',
+                              style: TextStyle(fontSize: 11.5)),
+                          selected: esMediaHoja,
+                          onSelected: (v) {
+                            if (v) setDialogState(() => esMediaHoja = true);
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        ChoiceChip(
+                          label: const Text('Por Bloques',
+                              style: TextStyle(fontSize: 11.5)),
+                          selected: !usarTextoLibre,
+                          onSelected: (v) {
+                            if (v) setDialogState(() => usarTextoLibre = false);
+                          },
+                        ),
+                        ChoiceChip(
+                          label: const Text('Texto Completo',
+                              style: TextStyle(fontSize: 11.5)),
+                          selected: usarTextoLibre,
+                          onSelected: (v) {
+                            if (v) setDialogState(() => usarTextoLibre = true);
+                          },
                         ),
                       ],
+                    ),
+                    const Divider(height: 20),
+
+                    // Hoja médica con membrete (Área scrolleable)
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Center(
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            width: anchoHoja,
+                            padding: EdgeInsets.all(paddingHoja),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey.shade300),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.04),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // 1. MEMBRETE / ENCABEZADO INSTITUCIONAL
+                                _buildEncabezadoMembrete(
+                                  doctorUsuario: docUsrEfectivo,
+                                  doctorInfo: docInfoEfectivo,
+                                  logoUrl: effectiveLogo,
+                                ),
+                                const Divider(
+                                    thickness: 2, color: Color(0xFF0284C7)),
+                                const SizedBox(height: 12),
+
+                                // 2. DATOS DEL PACIENTE
+                                _buildFichaPaciente(paciente),
+                                const SizedBox(height: 16),
+                                const Divider(color: Colors.black12),
+                                const SizedBox(height: 12),
+
+                                // 3. CONTENIDO DEL REPORTE (Bloques o Texto Completo editable)
+                                if (usarTextoLibre)
+                                  TextField(
+                                    controller: textoLibreCtrl,
+                                    maxLines: null,
+                                    minLines: esMediaHoja ? 6 : 10,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      height: 1.5,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                    decoration: InputDecoration(
+                                      hintText:
+                                          'Escribe o ajusta el contenido completo del récipe o informe...',
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(
+                                            color: Colors.grey.shade300),
+                                      ),
+                                      contentPadding: const EdgeInsets.all(12),
+                                    ),
+                                  )
+                                else
+                                  contenidoCuerpo,
+
+                                SizedBox(height: esMediaHoja ? 18 : 30),
+                                // 4. PIE DE PÁGINA Y FIRMA MÉDICA
+                                _buildPieDeFirma(
+                                    docUsrEfectivo, docInfoEfectivo, notasPie),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                const Divider(height: 20),
-
-                // Hoja médica con membrete (Área scrolleable)
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade300),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // 1. MEMBRETE / ENCABEZADO INSTITUCIONAL
-                          _buildEncabezadoMembrete(
-                            doctorUsuario: doctorUsuario,
-                            doctorInfo: doctorInfo,
-                            logoUrl: logoUrl,
-                          ),
-                          const Divider(thickness: 2, color: Color(0xFF0284C7)),
-                          const SizedBox(height: 12),
-
-                          // 2. DATOS DEL PACIENTE
-                          _buildFichaPaciente(paciente),
-                          const SizedBox(height: 16),
-                          const Divider(color: Colors.black12),
-                          const SizedBox(height: 12),
-
-                          // 3. CONTENIDO DEL REPORTE
-                          contenidoCuerpo,
-
-                          const SizedBox(height: 30),
-                          // 4. PIE DE PÁGINA Y FIRMA MÉDICA
-                          _buildPieDeFirma(doctorUsuario, doctorInfo, notasPie),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
+    textoLibreCtrl.dispose();
   }
 
   /// Construye el membrete superior del reporte
@@ -143,13 +283,20 @@ class MedicalReportPrinterService {
     String? logoUrl,
   }) {
     final nombreDoc = doctorUsuario?.nombre ?? 'Doctor Tratante';
-    final especialidad = doctorInfo?.especialidad ?? 'Medicina General';
+    final metaEsp = SupaFlow.client.auth.currentUser?.userMetadata?['especialidad']
+        ?.toString()
+        .trim();
+    final especialidad = (doctorInfo?.especialidad?.trim().isNotEmpty ?? false)
+        ? doctorInfo!.especialidad!.trim()
+        : ((metaEsp != null && metaEsp.isNotEmpty)
+            ? metaEsp
+            : 'Especialidad Médica');
     final colegiatura = doctorInfo?.nroColegiatura;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Logo o icono institucional
+        // Logo del consultorio (si el doctor no subió logo, se muestra el emblema con su especialidad)
         if (logoUrl != null && logoUrl.isNotEmpty)
           ClipRRect(
             borderRadius: BorderRadius.circular(8),

@@ -12,6 +12,7 @@ class AppointmentVenueDatetimeSection extends StatelessWidget {
   final DateTime fechaCita;
   final String horaSeleccionadaStr;
   final bool esEmergencia;
+  final bool esOrdenLlegada;
   final List<String> horasDisponibles;
   final ValueChanged<String?> onSedeChanged;
   final ValueChanged<DateTime> onFechaChanged;
@@ -27,6 +28,7 @@ class AppointmentVenueDatetimeSection extends StatelessWidget {
     required this.fechaCita,
     required this.horaSeleccionadaStr,
     required this.esEmergencia,
+    this.esOrdenLlegada = false,
     required this.horasDisponibles,
     required this.onSedeChanged,
     required this.onFechaChanged,
@@ -290,36 +292,66 @@ class AppointmentVenueDatetimeSection extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Expanded(
-                flex: 2,
-                child: DropdownButtonFormField<String>(
-                  key: ValueKey(horaSeleccionadaStr),
-                  isExpanded: true,
-                  initialValue: horaSeleccionadaStr,
-                  decoration: const InputDecoration(
-                    labelText: 'Hora',
-                    isDense: true,
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(
-                      Icons.access_time_rounded,
-                      size: 16,
-                      color: Color(0xFF0284C7),
+              if (esOrdenLlegada)
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0FDF4),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFF86EFAC)),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.groups_rounded, size: 16, color: Color(0xFF0F766E)),
+                        SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            'Por orden de llegada',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0F766E),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  items: horasDisponibles
-                      .map((h) => DropdownMenuItem(
-                            value: h,
-                            child: Text(
-                              h,
-                              style: const TextStyle(fontSize: 11.5),
-                            ),
-                          ))
-                      .toList(),
-                  onChanged: (val) {
-                    if (val != null) onHoraChanged(val);
-                  },
+                )
+              else
+                Expanded(
+                  flex: 2,
+                  child: DropdownButtonFormField<String>(
+                    key: ValueKey(horaSeleccionadaStr),
+                    isExpanded: true,
+                    initialValue: horaSeleccionadaStr,
+                    decoration: const InputDecoration(
+                      labelText: 'Hora',
+                      isDense: true,
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(
+                        Icons.access_time_rounded,
+                        size: 16,
+                        color: Color(0xFF0284C7),
+                      ),
+                    ),
+                    items: horasDisponibles
+                        .map((h) => DropdownMenuItem(
+                              value: h,
+                              child: Text(
+                                h,
+                                style: const TextStyle(fontSize: 11.5),
+                              ),
+                            ))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) onHoraChanged(val);
+                    },
+                  ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: 14),

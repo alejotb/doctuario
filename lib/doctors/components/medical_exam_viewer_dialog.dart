@@ -281,21 +281,50 @@ class _MedicalExamViewerDialogState extends State<MedicalExamViewerDialog> {
         ]),
       );
     }
+    final esPdf = targetUrl.toLowerCase().contains('.pdf') ||
+        (widget.examen.formato ?? '').toLowerCase() == 'pdf';
+
+    if (esPdf) {
+      return Container(
+        height: 300, width: double.infinity, padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: const Color(0xFFCBD5E1))),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: Colors.red.shade50, shape: BoxShape.circle), child: const Icon(Icons.picture_as_pdf_rounded, color: Colors.red, size: 48)),
+          const SizedBox(height: 16),
+          Text(widget.examen.titulo ?? 'Documento Clínico en PDF', style: GoogleFonts.mooli(fontSize: 16, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+          const SizedBox(height: 8),
+          const Text('Documento digital disponible para visualización en alta definición.', style: TextStyle(fontSize: 12.5, color: Colors.black54), textAlign: TextAlign.center),
+          const SizedBox(height: 20),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0284C7), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+            onPressed: _abrirEnlaceExterno,
+            icon: const Icon(Icons.visibility_rounded, size: 18),
+            label: const Text('Abrir y Visualizar PDF Completo', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ]),
+      );
+    }
+
+    // Formatos médicos especiales (ej. ECG, DICOM, XML, DAT) no previsualizables en navegador
     return Container(
       height: 300, width: double.infinity, padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: const Color(0xFFCBD5E1))),
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: Colors.red.shade50, shape: BoxShape.circle), child: const Icon(Icons.picture_as_pdf_rounded, color: Colors.red, size: 48)),
+        Container(padding: const EdgeInsets.all(16), decoration: const BoxDecoration(color: Color(0xFFE0F2FE), shape: BoxShape.circle), child: const Icon(Icons.monitor_heart_rounded, color: Color(0xFF0284C7), size: 48)),
         const SizedBox(height: 16),
-        Text(widget.examen.titulo ?? 'Documento Clínico en PDF', style: GoogleFonts.mooli(fontSize: 16, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+        Text(widget.examen.titulo ?? 'Archivo de Estudio Médico', style: GoogleFonts.mooli(fontSize: 16, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
         const SizedBox(height: 8),
-        const Text('Documento digital disponible para visualización en alta definición.', style: TextStyle(fontSize: 12.5, color: Colors.black54), textAlign: TextAlign.center),
+        Text(
+          'Formato especial (${(widget.examen.formato ?? "archivo").toUpperCase()}). Descárgalo para abrirlo en tu programa médico especializado.',
+          style: const TextStyle(fontSize: 12.5, color: Colors.black54),
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: 20),
         ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0284C7), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0F766E), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
           onPressed: _abrirEnlaceExterno,
-          icon: const Icon(Icons.visibility_rounded, size: 18),
-          label: const Text('Abrir y Visualizar PDF Completo', style: TextStyle(fontWeight: FontWeight.bold)),
+          icon: const Icon(Icons.download_rounded, size: 18),
+          label: const Text('Descargar Archivo Original', style: TextStyle(fontWeight: FontWeight.bold)),
         ),
       ]),
     );

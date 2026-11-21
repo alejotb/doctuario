@@ -34,12 +34,49 @@ class _SecretaryDashboardWidgetState extends State<SecretaryDashboardWidget> {
   List<CitasRow> _citas = [], _citasDeLaSemana = [];
   final Map<String, UsuariosRow> _pacientesMap = {};
   bool _isLoading = true;
+  RealtimeChannel? _citasChannel;
 
   @override
   void initState() {
     super.initState();
     _inicioSemana = _calcularInicioSemana(_fecha);
     _cargarDoctores();
+  }
+
+  @override
+  void dispose() {
+    if (_citasChannel != null) {
+      SupaFlow.client.removeChannel(_citasChannel!);
+      _citasChannel = null;
+    }
+    super.dispose();
+  }
+
+  void _suscribirRealtimeCitas(String idDoctor) {
+    if (_citasChannel != null) {
+      SupaFlow.client.removeChannel(_citasChannel!);
+      _citasChannel = null;
+    }
+    _citasChannel = SupaFlow.client
+        .channel('sec-citas-$idDoctor')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'citas',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'id_doctor',
+            value: idDoctor,
+          ),
+          callback: (_) {
+            if (mounted) {
+              _cargarSedesYCitas().then((_) {
+                if (mounted) setState(() {});
+              });
+            }
+          },
+        )
+        .subscribe();
   }
 
   DateTime _calcularInicioSemana(DateTime d) => DateTime(d.year, d.month, d.day - (d.weekday - DateTime.monday));
@@ -79,6 +116,7 @@ class _SecretaryDashboardWidgetState extends State<SecretaryDashboardWidget> {
       }
       if (_doctorSeleccionadoId != null) {
         await DualDatabaseConfig.instance.consultarYConectarTenantDoctor(_doctorSeleccionadoId!);
+        _suscribirRealtimeCitas(_doctorSeleccionadoId!);
         await _cargarSedesYCitas();
       }
     } catch (e) { debugPrint('Error cargando doctores: $e'); }
@@ -112,14 +150,18 @@ class _SecretaryDashboardWidgetState extends State<SecretaryDashboardWidget> {
       final finSem = _inicioSemana.add(const Duration(days: 7, seconds: -1));
       _citasDeLaSemana = await CitasTable().queryRows(queryFn: (q) {
         var query = q.eq('id_doctor', _doctorSeleccionadoId!).gte('fecha_hora', _inicioSemana.toUtc().toIso8601String()).lte('fecha_hora', finSem.toUtc().toIso8601String()).neq('estado', 'cancelada');
-        return _sedeSeleccionadaId != null ? query.eq('id_sede', _sedeSeleccionadaId!) : query;
+        return _sedeSeleccionadaId != null
+            ? query.or('id_sede.eq.$_sedeSeleccionadaId,id_sede.is.null')
+            : query;
       });
 
       final iDia = DateTime(_fecha.year, _fecha.month, _fecha.day, 0, 0, 0);
       final fDia = DateTime(_fecha.year, _fecha.month, _fecha.day, 23, 59, 59);
       _citas = await CitasTable().queryRows(queryFn: (q) {
         var query = q.eq('id_doctor', _doctorSeleccionadoId!).gte('fecha_hora', iDia.toUtc().toIso8601String()).lte('fecha_hora', fDia.toUtc().toIso8601String()).neq('estado', 'cancelada');
-        if (_sedeSeleccionadaId != null) query = query.eq('id_sede', _sedeSeleccionadaId!);
+        if (_sedeSeleccionadaId != null) {
+          query = query.or('id_sede.eq.$_sedeSeleccionadaId,id_sede.is.null');
+        }
         return query.order('fecha_hora_estimada_actual', ascending: true);
       });
 
@@ -438,7 +480,10 @@ class _SecretaryDashboardWidgetState extends State<SecretaryDashboardWidget> {
                     enEsperaCount: enEsperaCount, enConsultaCount: enConsultaCount, pendientesCount: pendientesCount,
                     onVincularDoctor: _mostrarDialogoVincularDoctor,
                     onDoctorChanged: (val) async {
-                      if (val != null) await DualDatabaseConfig.instance.consultarYConectarTenantDoctor(val);
+                      if (val != null) {
+                        await DualDatabaseConfig.instance.consultarYConectarTenantDoctor(val);
+                        _suscribirRealtimeCitas(val);
+                      }
                       setState(() { _doctorSeleccionadoId = val; _sedeSeleccionadaId = null; });
                       _cargarSedesYCitas().then((_) { if (mounted) setState(() {}); });
                     },

@@ -34,6 +34,23 @@ class PatientHistoryTab extends StatelessWidget {
     final doctorEspec = doctoresInfoMap[h.idDoctor] ?? doctorActualInfo;
     final fechaStr = DateFormat('dd/MM/yyyy HH:mm').format(h.createdAt);
 
+    final buffer = StringBuffer();
+    if (h.motivoConsulta?.isNotEmpty ?? false) {
+      buffer.writeln('Motivo de Consulta:\n${h.motivoConsulta}\n');
+    }
+    if (h.sintomas?.isNotEmpty ?? false) {
+      buffer.writeln('Síntomas:\n${h.sintomas}\n');
+    }
+    if (h.examenFisico?.isNotEmpty ?? false) {
+      buffer.writeln('Examen Físico:\n${h.examenFisico}\n');
+    }
+    if (h.diagnostico?.isNotEmpty ?? false) {
+      buffer.writeln('Diagnóstico:\n${h.diagnostico}\n');
+    }
+    if (h.tratamiento?.isNotEmpty ?? false) {
+      buffer.writeln('Plan Terapéutico / Récipe:\n${h.tratamiento}\n');
+    }
+
     MedicalReportPrinterService.instance.mostrarReporteImprimible(
       context: context,
       tituloDocumento: 'Evolución Médica - $fechaStr',
@@ -41,6 +58,7 @@ class PatientHistoryTab extends StatelessWidget {
       doctorUsuario: doctorAtendio,
       doctorInfo: doctorEspec,
       logoUrl: doctorEspec?.logoUrl,
+      textoLibreInicial: buffer.toString().trim(),
       contenidoCuerpo: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

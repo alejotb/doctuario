@@ -322,19 +322,57 @@ class _AdminDoctorTenantsModalWidgetState extends State<AdminDoctorTenantsModalW
                                         ),
                                       ),
                                       const SizedBox(width: 8.0),
-                                      ElevatedButton(
-                                        onPressed: () => _abrirConfiguracionCuenta(doc),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: isAprobado ? const Color(0xFFF1F5F9) : const Color(0xFF0284C7),
-                                          foregroundColor: isAprobado ? const Color(0xFF334155) : Colors.white,
-                                          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                                          elevation: 0.0,
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-                                        ),
-                                        child: Text(
-                                          isAprobado ? (isEs ? 'Configurar' : 'Config') : (isEs ? 'Activar' : 'Activate'),
-                                          style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
-                                        ),
+                                      Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: [
+                                          ElevatedButton(
+                                            onPressed: () => _abrirConfiguracionCuenta(doc),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: isAprobado ? const Color(0xFFF1F5F9) : const Color(0xFF0284C7),
+                                              foregroundColor: isAprobado ? const Color(0xFF334155) : Colors.white,
+                                              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                                              elevation: 0.0,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                                            ),
+                                            child: Text(
+                                              isAprobado ? (isEs ? 'Configurar' : 'Config') : (isEs ? 'Activar' : 'Activate'),
+                                              style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                          if (!isAprobado) ...[
+                                            const SizedBox(height: 6.0),
+                                            OutlinedButton(
+                                              onPressed: () async {
+                                                final ok = await AdminTenantService.instance.solicitarCredencialesDoctor(doc.idDoctor);
+                                                if (ok && context.mounted) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(
+                                                      backgroundColor: const Color(0xFF0284C7),
+                                                      content: Text(
+                                                        isEs
+                                                            ? 'Solicitud de registro médico enviada a Dr(a). ${doc.nombre}.'
+                                                            : 'License number request sent to Dr. ${doc.nombre}.',
+                                                      ),
+                                                    ),
+                                                  );
+                                                  _cargarSolicitudes();
+                                                }
+                                              },
+                                              style: OutlinedButton.styleFrom(
+                                                foregroundColor: const Color(0xFFD97706),
+                                                side: const BorderSide(color: Color(0xFFFCD34D)),
+                                                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                                minimumSize: const Size(0, 28),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                                              ),
+                                              child: Text(
+                                                isEs ? 'Pedir Registro' : 'Request ID',
+                                                style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
                                       ),
                                     ],
                                   ),

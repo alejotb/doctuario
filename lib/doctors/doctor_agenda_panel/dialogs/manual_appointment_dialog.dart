@@ -283,20 +283,46 @@ class _ManualAppointmentDialogState extends State<ManualAppointmentDialog> {
         }
         widget.onCitaCreada(DateTime.now());
       } else {
-        final time = _parseTimeOfDay(_horaSeleccionadaStr);
-        final fechaHoraCompleta = DateTime(_fechaCita.year, _fechaCita.month, _fechaCita.day, time.hour, time.minute);
-        if (!_esSobrecita) {
-          final dup = await docClient.from('citas').select('id').eq('id_doctor', docIdValido).eq('fecha_hora', fechaHoraCompleta.toUtc().toIso8601String()).neq('estado', 'cancelada').limit(1);
-          if (dup.isNotEmpty) {
-            setState(() => _isSaving = false);
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text('⚠️ Ya existe una cita activa el ${_fechaCita.day}/${_fechaCita.month} a las $_horaSeleccionadaStr. Si deseas agendar sobrecupo, activa "Sobrecita".'),
-                backgroundColor: Colors.orange.shade800,
-                duration: const Duration(seconds: 4),
-              ));
+        final sedeObj = _sedesLocales.where((s) => s.id == sedeElegidaId).isNotEmpty
+            ? _sedesLocales.firstWhere((s) => s.id == sedeElegidaId)
+            : (_sedesLocales.isNotEmpty ? _sedesLocales.first : null);
+        final esOrdenLlegada = sedeObj?.modalidadAtencion == 'orden_llegada';
+
+        DateTime fechaHoraCompleta;
+        int? turnoAsignado;
+        if (esOrdenLlegada) {
+          final iniDia = DateTime(_fechaCita.year, _fechaCita.month, _fechaCita.day, 0, 0, 0);
+          final finDia = DateTime(_fechaCita.year, _fechaCita.month, _fechaCita.day, 23, 59, 59);
+          int existentesDia = 0;
+          try {
+            final resDia = await docClient
+                .from('citas')
+                .select('id')
+                .eq('id_doctor', docIdValido)
+                .gte('fecha_hora', iniDia.toUtc().toIso8601String())
+                .lte('fecha_hora', finDia.toUtc().toIso8601String())
+                .neq('estado', 'cancelada');
+            existentesDia = (resDia as List).length;
+          } catch (_) {}
+          turnoAsignado = existentesDia + 1;
+          fechaHoraCompleta = DateTime(_fechaCita.year, _fechaCita.month, _fechaCita.day, 8, 0)
+              .add(Duration(minutes: existentesDia));
+        } else {
+          final time = _parseTimeOfDay(_horaSeleccionadaStr);
+          fechaHoraCompleta = DateTime(_fechaCita.year, _fechaCita.month, _fechaCita.day, time.hour, time.minute);
+          if (!_esSobrecita) {
+            final dup = await docClient.from('citas').select('id').eq('id_doctor', docIdValido).eq('fecha_hora', fechaHoraCompleta.toUtc().toIso8601String()).neq('estado', 'cancelada').limit(1);
+            if (dup.isNotEmpty) {
+              setState(() => _isSaving = false);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('⚠️ Ya existe una cita activa el ${_fechaCita.day}/${_fechaCita.month} a las $_horaSeleccionadaStr. Si deseas agendar sobrecupo, activa "Sobrecita".'),
+                  backgroundColor: Colors.orange.shade800,
+                  duration: const Duration(seconds: 4),
+                ));
+              }
+              return;
             }
-            return;
           }
         }
         final newCitaId = const Uuid().v4();
@@ -305,6 +331,9 @@ class _ManualAppointmentDialogState extends State<ManualAppointmentDialog> {
           'fecha_hora': fechaHoraCompleta.toUtc().toIso8601String(),
           'fecha_hora_estimada_actual': fechaHoraCompleta.toUtc().toIso8601String(),
           'estado': _esSobrecita ? 'solicitada' : 'confirmada',
+          'modalidad_atencion': esOrdenLlegada ? 'orden_llegada' : 'hora_fija',
+          if (turnoAsignado != null) 'turno_numero': turnoAsignado,
+          if (turnoAsignado != null) 'posicion_cola': turnoAsignado,
           'motivo': motivoFinal, 'trato_especial': _esFamiliar, 'minutos_retraso_acumulados': 0,
           'notas_medicas': _estudiosSeleccionados.isNotEmpty ? 'Estudios: ${_estudiosSeleccionados.join(", ")}' : null,
           'created_at': DateTime.now().toUtc().toIso8601String(),
@@ -328,6 +357,7 @@ class _ManualAppointmentDialogState extends State<ManualAppointmentDialog> {
           try {
             await docClient.from('examenes_medicos').insert({
               'id': const Uuid().v4(), 'id_paciente': pacienteIdFinal, 'id_doctor': docIdValido,
+              'id_cita': newCitaId,
               'titulo': est, 'tipo_examen': est, 'fecha_estudio': fechaHoraCompleta.toUtc().toIso8601String(),
               'estado': 'programado', 'notas': 'Programado en cita del ${fechaHoraCompleta.day}/${fechaHoraCompleta.month}/${fechaHoraCompleta.year}',
               'created_at': DateTime.now().toUtc().toIso8601String(),
@@ -429,6 +459,10 @@ class _ManualAppointmentDialogState extends State<ManualAppointmentDialog> {
                 sedes: _sedesLocales, idSedeSeleccionada: _idSedeCita,
                 sedeDetectadaAuto: _sedeDetectadaAuto, fechaCita: _fechaCita,
                 horaSeleccionadaStr: _horaSeleccionadaStr, esEmergencia: widget.esEmergencia,
+                esOrdenLlegada: (_sedesLocales.where((s) => s.id == _idSedeCita).isNotEmpty
+                        ? _sedesLocales.firstWhere((s) => s.id == _idSedeCita).modalidadAtencion
+                        : (_sedesLocales.isNotEmpty ? _sedesLocales.first.modalidadAtencion : null)) ==
+                    'orden_llegada',
                 horasDisponibles: _horasDisponibles,
                 onSedeChanged: (val) => setState(() { _idSedeCita = val; _sedeDetectadaAuto = null; }),
                 onFechaChanged: (picked) => setState(() { _fechaCita = picked; _detectarSedePorFechaHora(picked, _horaSeleccionadaStr); }),

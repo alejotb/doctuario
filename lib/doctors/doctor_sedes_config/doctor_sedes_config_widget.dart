@@ -1182,8 +1182,8 @@ class _ModalFormularioSedeState extends State<_ModalFormularioSede> {
     setState(() => _guardando = true);
 
     try {
-      final diasOrdenados = _diasSeleccionados.toList()..sort();
-      final diasTexto = diasOrdenados.map((d) => _nombreDiaCorto(d)).join(', ');
+      List<int> diasOrdenados = _diasSeleccionados.toList()..sort();
+      String diasTexto = diasOrdenados.map((d) => _nombreDiaCorto(d)).join(', ');
       String horarioTexto =
           '$diasTexto: ${_formatearTimeOfDay(_horaInicio)} - ${_formatearTimeOfDay(_horaFin)}';
       if (_tienePausaAlmuerzo) {
@@ -1204,6 +1204,125 @@ class _ModalFormularioSedeState extends State<_ModalFormularioSede> {
 
       // Resolver ID del doctor compatible con la FK de la base clínica
       final idDoctorFk = await _resolverIdDoctorClinico();
+
+      // Validar colisión de días y horarios con otras sedes existentes del mismo doctor
+      if (idDoctorFk != null && idDoctorFk.isNotEmpty) {
+        final sedeActualId = widget.sedeExistente?.id;
+        final horaInicioMin = _horaInicio.hour * 60 + _horaInicio.minute;
+        final horaFinMin = _horaFin.hour * 60 + _horaFin.minute;
+
+        int parseMinutos(dynamic raw) {
+          final s = raw?.toString() ?? '';
+          final m = RegExp(r'(\d{1,2}):(\d{2})').firstMatch(s);
+          if (m == null) return -1;
+          return (int.tryParse(m.group(1)!) ?? 0) * 60 + (int.tryParse(m.group(2)!) ?? 0);
+        }
+
+        try {
+          final sedesDoc = await DoctorSedesTable().queryRows(
+            queryFn: (q) => q.eq('id_doctor', idDoctorFk),
+          );
+          final sedesMap = {for (final s in sedesDoc) s.id: s.nombreSede ?? 'Otra sede'};
+          final horariosDoc = await HorariosDisponibilidadTable().queryRows(
+            queryFn: (q) => q.eq('id_doctor', idDoctorFk).eq('activo', true),
+          );
+
+          final conflictos = <String>[];
+          final diasEnConflicto = <int>{};
+          final idsHorariosConflicto = <String>[];
+
+          for (final h in horariosDoc) {
+            if (sedeActualId != null && h.idSede == sedeActualId) continue;
+            final dia = h.diaSemana ?? 0;
+            if (!diasOrdenados.contains(dia)) continue;
+            final iniEx = parseMinutos(h.horaInicio);
+            final finEx = parseMinutos(h.horaFin);
+            if (iniEx >= 0 && finEx > iniEx && horaInicioMin < finEx && horaFinMin > iniEx) {
+              diasEnConflicto.add(dia);
+              idsHorariosConflicto.add(h.id);
+              final nomSede = sedesMap[h.idSede] ?? 'Otra sede';
+              final iniTxt = h.horaInicio?.toString().substring(0, 5) ?? '';
+              final finTxt = h.horaFin?.toString().substring(0, 5) ?? '';
+              conflictos.add('• ${_nombreDiaCorto(dia)} ($iniTxt - $finTxt) en "$nomSede"');
+            }
+          }
+
+          if (conflictos.isNotEmpty && mounted) {
+            final decision = await showDialog<String>(
+              context: context,
+              barrierDismissible: false,
+              builder: (ctx) => AlertDialog(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                title: const Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded, color: Color(0xFFD97706)),
+                    SizedBox(width: 8),
+                    Expanded(child: Text('Horario en Conflicto', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                  ],
+                ),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Este horario coincide con días y horas ya configurados en otra sede:',
+                        style: TextStyle(fontSize: 13),
+                      ),
+                      const SizedBox(height: 10),
+                      ...conflictos.toSet().map((c) => Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text(c, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF92400E))),
+                          )),
+                      const SizedBox(height: 12),
+                      const Text('¿Qué deseas hacer con los días que coinciden?', style: TextStyle(fontSize: 12.5)),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop('cancelar'),
+                    child: const Text('Cancelar'),
+                  ),
+                  if (diasOrdenados.length > diasEnConflicto.length)
+                    OutlinedButton(
+                      onPressed: () => Navigator.of(ctx).pop('omitir'),
+                      child: const Text('Omitir días repetidos'),
+                    ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD97706), foregroundColor: Colors.white),
+                    onPressed: () => Navigator.of(ctx).pop('sobreescribir'),
+                    child: const Text('Sobreescribir'),
+                  ),
+                ],
+              ),
+            );
+
+            if (decision == null || decision == 'cancelar') {
+              if (mounted) setState(() => _guardando = false);
+              return;
+            } else if (decision == 'omitir') {
+              diasOrdenados = diasOrdenados.where((d) => !diasEnConflicto.contains(d)).toList();
+              if (diasOrdenados.isEmpty) {
+                if (mounted) setState(() => _guardando = false);
+                return;
+              }
+              diasTexto = diasOrdenados.map((d) => _nombreDiaCorto(d)).join(', ');
+              horarioTexto =
+                  '$diasTexto: ${_formatearTimeOfDay(_horaInicio)} - ${_formatearTimeOfDay(_horaFin)}';
+              if (_tienePausaAlmuerzo) {
+                horarioTexto += ' (Almuerzo: ${_formatearTimeOfDay(_horaInicioAlmuerzo)} - ${_formatearTimeOfDay(_horaFinAlmuerzo)})';
+              }
+            } else if (decision == 'sobreescribir') {
+              for (final hid in idsHorariosConflicto) {
+                try {
+                  await HorariosDisponibilidadTable().delete(matchingRows: (q) => q.eq('id', hid));
+                } catch (_) {}
+              }
+            }
+          }
+        } catch (_) {}
+      }
 
       String sedeId;
 

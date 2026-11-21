@@ -8,6 +8,7 @@ import '/doctors/components/doctor_gemini_config_dialog.dart';
 import '/doctors/components/doctor_logo_config_dialog.dart';
 import '/doctors/components/doctor_solo_mode_dialog.dart';
 import '/doctors/components/doctor_studies_config_dialog.dart';
+import '/doctors/components/doctor_support_dialog.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -436,6 +437,21 @@ class _MyAccountWidgetState extends State<MyAccountWidget> {
               if (uid.isEmpty) return;
               await DoctorSoloModeDialog.show(context, idDoctor: uid, initialVisible: _doctorData?.visibleEnCatalogo ?? true, doctorUsuario: _usuario, doctorInfo: _doctorData);
               _cargarDatos();
+            },
+          ),
+          const Divider(height: 1.0, indent: 56.0),
+          _buildTile(
+            icon: Icons.support_agent_rounded,
+            iconColor: const Color(0xFF0F766E),
+            title: isEs ? 'Soporte Técnico y Reportes' : 'Technical Support & Bug Reports',
+            subtitle: isEs ? 'Envía un ticket o reporte al administrador' : 'Send a support ticket to admin',
+            onTap: () {
+              if (uid.isEmpty) return;
+              DoctorSupportDialog.show(
+                context,
+                idDoctor: uid,
+                doctorNombre: _usuario?.nombre ?? 'Doctor/a',
+              );
             },
           ),
         ],

@@ -30,11 +30,51 @@ class _PatientExamsWidgetState extends State<PatientExamsWidget> {
   List<ExamenesMedicosRow> _examenes = [];
   bool _isLoading = true;
   bool _isUploading = false;
+  final TextEditingController _searchCtrl = TextEditingController();
+  String _tipoFiltro = 'todos';
+  String _orden = 'fecha_desc'; // 'fecha_desc', 'fecha_asc', 'nombre_asc', 'tipo_asc'
 
   @override
   void initState() {
     super.initState();
     _cargarExamenes();
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  List<ExamenesMedicosRow> get _examenesFiltrados {
+    final q = _searchCtrl.text.trim().toLowerCase();
+    final list = _examenes.where((ex) {
+      if (_tipoFiltro != 'todos') {
+        final t = (ex.tipoExamen ?? '').toLowerCase();
+        if (!t.contains(_tipoFiltro.toLowerCase())) return false;
+      }
+      if (q.isEmpty) return true;
+      final tit = (ex.titulo ?? '').toLowerCase();
+      final tipo = (ex.tipoExamen ?? '').toLowerCase();
+      final esp = (ex.especialidad ?? '').toLowerCase();
+      return tit.contains(q) || tipo.contains(q) || esp.contains(q);
+    }).toList();
+
+    list.sort((a, b) {
+      if (_orden == 'fecha_asc') {
+        return (a.fechaEstudio ?? a.createdAt)
+            .compareTo(b.fechaEstudio ?? b.createdAt);
+      }
+      if (_orden == 'nombre_asc') {
+        return (a.titulo ?? '').toLowerCase().compareTo((b.titulo ?? '').toLowerCase());
+      }
+      if (_orden == 'tipo_asc') {
+        return (a.tipoExamen ?? '').toLowerCase().compareTo((b.tipoExamen ?? '').toLowerCase());
+      }
+      return (b.fechaEstudio ?? b.createdAt)
+          .compareTo(a.fechaEstudio ?? a.createdAt);
+    });
+    return list;
   }
 
   Future<void> _cargarExamenes() async {
@@ -60,8 +100,7 @@ class _PatientExamsWidgetState extends State<PatientExamsWidget> {
     }
 
     final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
+      type: FileType.any,
       withData: true,
     );
 
@@ -248,13 +287,65 @@ class _PatientExamsWidgetState extends State<PatientExamsWidget> {
                     ],
                   ),
                 )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _examenes.length,
-                  itemBuilder: (context, index) {
-                    final ex = _examenes[index];
-                    final esPdf = ex.formato == 'pdf' ||
-                        (ex.archivoUrl?.toLowerCase().endsWith('.pdf') ?? false);
+              : Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _searchCtrl,
+                              onChanged: (_) => setState(() {}),
+                              decoration: InputDecoration(
+                                hintText: 'Buscar por nombre, tipo o especialidad...',
+                                prefixIcon: const Icon(Icons.search, size: 19),
+                                isDense: true,
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 10),
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          DropdownButton<String>(
+                            value: _orden,
+                            underline: const SizedBox.shrink(),
+                            items: const [
+                              DropdownMenuItem(
+                                  value: 'fecha_desc',
+                                  child: Text('Más recientes',
+                                      style: TextStyle(fontSize: 12))),
+                              DropdownMenuItem(
+                                  value: 'fecha_asc',
+                                  child: Text('Más antiguos',
+                                      style: TextStyle(fontSize: 12))),
+                              DropdownMenuItem(
+                                  value: 'nombre_asc',
+                                  child: Text('Nombre (A-Z)',
+                                      style: TextStyle(fontSize: 12))),
+                              DropdownMenuItem(
+                                  value: 'tipo_asc',
+                                  child: Text('Por tipo',
+                                      style: TextStyle(fontSize: 12))),
+                            ],
+                            onChanged: (v) {
+                              if (v != null) setState(() => _orden = v);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _examenesFiltrados.length,
+                        itemBuilder: (context, index) {
+                          final ex = _examenesFiltrados[index];
+                          final esPdf = ex.formato == 'pdf' ||
+                              (ex.archivoUrl?.toLowerCase().endsWith('.pdf') ??
+                                  false);
 
                     return Card(
                       elevation: 2,
@@ -341,6 +432,9 @@ class _PatientExamsWidgetState extends State<PatientExamsWidget> {
                       ),
                     );
                   },
+                ),
+                    ),
+                  ],
                 ),
       floatingActionButton: widget.puedeSubir
           ? FloatingActionButton.extended(
