@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../services/doctor_studies_service.dart';
 
 /// Sección para configurar la duración de la cita y seleccionar o añadir estudios/exámenes médicos.
 class AppointmentDurationStudiesSection extends StatefulWidget {
   const AppointmentDurationStudiesSection({
     super.key,
+    this.idDoctor = '',
     required this.duracionMinutos,
     required this.onDuracionChanged,
     required this.estudiosSeleccionados,
@@ -12,6 +14,7 @@ class AppointmentDurationStudiesSection extends StatefulWidget {
     this.especialidadDoctor,
   });
 
+  final String idDoctor;
   final int duracionMinutos;
   final ValueChanged<int> onDuracionChanged;
   final List<String> estudiosSeleccionados;
@@ -29,6 +32,29 @@ class _AppointmentDurationStudiesSectionState
   final TextEditingController _duracionPersonalizadaCtrl =
       TextEditingController();
   bool _mostrarCampoPersonalizado = false;
+  List<_EstudioFrecuente> _estudiosDoctor = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarEstudiosDelDoctor();
+  }
+
+  Future<void> _cargarEstudiosDelDoctor() async {
+    if (widget.idDoctor.trim().isEmpty) return;
+    try {
+      final todos = await DoctorStudiesService.instance
+          .obtenerEstudiosConfigurados(widget.idDoctor);
+      final activos = todos.where((e) => e.activo).toList();
+      if (mounted) {
+        setState(() {
+          _estudiosDoctor = activos
+              .map((e) => _EstudioFrecuente(e.titulo, e.duracionMinutos, e.categoria))
+              .toList();
+        });
+      }
+    } catch (_) {}
+  }
 
   @override
   void dispose() {
@@ -37,83 +63,9 @@ class _AppointmentDurationStudiesSectionState
     super.dispose();
   }
 
-  /// Catálogo inteligente de estudios frecuentes según especialidades del médico
+  /// Retorna únicamente los estudios configurados y activos del médico.
   List<_EstudioFrecuente> _obtenerEstudiosRecomendados() {
-    final espRaw = (widget.especialidadDoctor ?? '').toLowerCase();
-
-    final List<_EstudioFrecuente> lista = [];
-
-    // Cardiología (o Cardiopediatría)
-    if (espRaw.contains('cardio')) {
-      lista.addAll([
-        const _EstudioFrecuente('Electrocardiograma (ECG)', 15, 'Cardiología'),
-        const _EstudioFrecuente('Ecocardiograma Transtorácico', 35, 'Cardiología'),
-        const _EstudioFrecuente('Ecocardiograma Doppler Color', 40, 'Cardiología'),
-        const _EstudioFrecuente('Holter de Ritmo 24h', 20, 'Cardiología'),
-        const _EstudioFrecuente('MAPA (Presión Arterial 24h)', 20, 'Cardiología'),
-        const _EstudioFrecuente('Prueba de Esfuerzo / Ergometría', 45, 'Cardiología'),
-      ]);
-    }
-
-    // Pediatría / Puericultura / Cardiopediatría
-    if (espRaw.contains('pediat') ||
-        espRaw.contains('infant') ||
-        espRaw.contains('puericult') ||
-        espRaw.contains('neonat')) {
-      lista.addAll([
-        const _EstudioFrecuente('Control de Crecimiento y Neurodesarrollo', 30, 'Pediatría'),
-        const _EstudioFrecuente('Ecocardiograma Pediátrico', 35, 'Pediatría'),
-        const _EstudioFrecuente('Tamizaje Pediátrico / Reflejos', 20, 'Pediatría'),
-        const _EstudioFrecuente('Esquema de Inmunización / Vacunas', 20, 'Pediatría'),
-      ]);
-    }
-
-    // Ginecología / Obstetricia
-    if (espRaw.contains('ginec') || espRaw.contains('obstet')) {
-      lista.addAll([
-        const _EstudioFrecuente('Ecografía Pélvica / Transvaginal', 30, 'Ginecología'),
-        const _EstudioFrecuente('Citología Cervical (Papanicolaou)', 20, 'Ginecología'),
-        const _EstudioFrecuente('Ecografía Obstétrica Doppler', 35, 'Ginecología'),
-        const _EstudioFrecuente('Colposcopia Diagnóstica', 30, 'Ginecología'),
-      ]);
-    }
-
-    // Neumonología
-    if (espRaw.contains('neumo')) {
-      lista.addAll([
-        const _EstudioFrecuente('Espirometría Simple', 20, 'Neumonología'),
-        const _EstudioFrecuente('Espirometría con Broncodilatador', 35, 'Neumonología'),
-        const _EstudioFrecuente('Test de Marcha de 6 Minutos', 30, 'Neumonología'),
-      ]);
-    }
-
-    // Gastroenterología
-    if (espRaw.contains('gastro')) {
-      lista.addAll([
-        const _EstudioFrecuente('Endoscopia Digestiva Alta', 45, 'Gastroenterología'),
-        const _EstudioFrecuente('Colonoscopia Diagnóstica', 60, 'Gastroenterología'),
-        const _EstudioFrecuente('Test de Aliento para Helicobacter', 20, 'Gastroenterología'),
-      ]);
-    }
-
-    // Estudios Generales y Procedimientos comunes para cualquier especialidad
-    final generales = [
-      const _EstudioFrecuente('Electrocardiograma (ECG)', 15, 'General'),
-      const _EstudioFrecuente('Ecografía Abdominal / Partes Blandas', 30, 'General'),
-      const _EstudioFrecuente('Espirometría', 25, 'General'),
-      const _EstudioFrecuente('Evaluación Preoperatoria / Riesgo Quirúrgico', 40, 'General'),
-      const _EstudioFrecuente('Curación / Retiro de Puntos', 20, 'Procedimiento'),
-      const _EstudioFrecuente('Lavado de Oídos / Limpieza', 20, 'Procedimiento'),
-      const _EstudioFrecuente('Infiltración Articular / Bloqueo', 25, 'Procedimiento'),
-    ];
-
-    for (final gen in generales) {
-      if (!lista.any((e) => e.nombre == gen.nombre)) {
-        lista.add(gen);
-      }
-    }
-
-    return lista;
+    return _estudiosDoctor;
   }
 
   void _agregarEstudioManual() {

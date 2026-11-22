@@ -208,6 +208,46 @@ class DoctorsService {
     return candidateId;
   }
 
+  /// Coincidencia inteligente de especialidades: permite que categorías generales
+  /// (ej. "Pediatría") incluyan ramas relacionadas (ej. "Cirugía Pediátrica", "Cardiopediatría").
+  static bool _matchesSpecialtyFilter(String docSpecialty, String filterSpecialty) {
+    final docNorm = VenezuelaLocations.normalize(docSpecialty);
+    final filterNorm = VenezuelaLocations.normalize(filterSpecialty);
+    if (docNorm.contains(filterNorm)) return true;
+
+    const Map<String, List<String>> rootKeywords = {
+      'pediatr': ['pediatr', 'neonat', 'infant', 'puericult'],
+      'cardio': ['cardio'],
+      'neuro': ['neuro'],
+      'ginec': ['ginec', 'obstet'],
+      'trauma': ['trauma', 'ortoped'],
+      'gastro': ['gastro', 'hepato'],
+      'endocrin': ['endocrin'],
+      'nefro': ['nefro'],
+      'urolog': ['urolog'],
+      'hemato': ['hemato'],
+      'inmuno': ['inmuno', 'alergo'],
+      'dermat': ['dermat'],
+      'oftalmo': ['oftalmo'],
+      'onco': ['onco'],
+      'reumat': ['reumat'],
+      'audio': ['audio', 'otorrino'],
+      'neumo': ['neumo', 'pulmon'],
+      'odont': ['odont', 'dental', 'maxilofacial'],
+      'cirug': ['cirug', 'quirurg'],
+      'psic': ['psic', 'psiquiat'],
+    };
+
+    for (final entry in rootKeywords.entries) {
+      if (filterNorm.contains(entry.key)) {
+        for (final kw in entry.value) {
+          if (docNorm.contains(kw)) return true;
+        }
+      }
+    }
+    return false;
+  }
+
   /// Consulta EXCLUSIVAMENTE los doctores reales registrados en la base de datos de Supabase.
   /// No incluye ninguna plantilla o doctor falso. Si no hay registros, retorna una lista vacía.
   Future<List<DoctorItem>> getDoctors({
@@ -325,13 +365,12 @@ class DoctorsService {
         return [];
       }
 
-      // 7. Filtrar por especialidad si fue especificada
+      // 7. Filtrar por especialidad si fue especificada (incluyendo ramas relacionadas por raíz)
       if (filterSpecialty != null &&
           filterSpecialty.isNotEmpty &&
           !filterSpecialty.toLowerCase().contains('todas')) {
-        final specNorm = VenezuelaLocations.normalize(filterSpecialty);
         doctors = doctors
-            .where((doc) => VenezuelaLocations.normalize(doc.specialty).contains(specNorm))
+            .where((doc) => _matchesSpecialtyFilter(doc.specialty, filterSpecialty))
             .toList();
       }
 

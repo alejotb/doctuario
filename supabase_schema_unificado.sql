@@ -200,30 +200,84 @@ ON public.secretaria_doctores FOR ALL TO authenticated
 USING (auth.uid() = id_doctor OR auth.uid() = id_secretaria)
 WITH CHECK (auth.uid() = id_doctor OR auth.uid() = id_secretaria);
 
--- D. PACIENTES (Aislamiento: doctor solo ve a sus pacientes atendidos o con cita)
+-- D. PACIENTES (Aislamiento sin recursión usando funciones SECURITY DEFINER)
+CREATE OR REPLACE FUNCTION public.es_paciente_de_doctor(p_id_paciente uuid, p_id_doctor uuid)
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.citas c
+    WHERE c.id_paciente = p_id_paciente AND c.id_doctor = p_id_doctor
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.es_secretaria_de_paciente(p_id_paciente uuid, p_id_secretaria uuid)
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.citas c
+    JOIN public.secretaria_doctores s ON s.id_doctor = c.id_doctor
+    WHERE c.id_paciente = p_id_paciente AND s.id_secretaria = p_id_secretaria
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.es_usuario_de_paciente(p_id_paciente uuid, p_uid uuid)
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.pacientes p
+    WHERE p.id = p_id_paciente
+      AND (p.id_usuario = p_uid OR p.id_usuario_representante = p_uid)
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.es_secretaria_de_doctor(p_id_doctor uuid, p_uid uuid)
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.secretaria_doctores s
+    WHERE s.id_doctor = p_id_doctor AND s.id_secretaria = p_uid
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.es_cita_de_doctor(p_id_cita uuid, p_id_doctor uuid)
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.citas c
+    WHERE c.id = p_id_cita AND c.id_doctor = p_id_doctor
+  );
+$$;
+
 ALTER TABLE public.pacientes ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Acceso seguro a pacientes" ON public.pacientes;
 CREATE POLICY "Acceso seguro a pacientes" 
 ON public.pacientes FOR ALL TO authenticated
 USING (
-  -- El propio usuario paciente o su representante
   auth.uid() = id_usuario 
   OR auth.uid() = id_usuario_representante
-  -- El doctor que lo tiene asignado directamente
   OR auth.uid() = id_doctor
-  -- O el doctor con quien el paciente tiene citas registradas
-  OR EXISTS (SELECT 1 FROM public.citas c WHERE c.id_paciente = pacientes.id AND c.id_doctor = auth.uid())
-  -- O secretarias de ese doctor
-  OR EXISTS (
-    SELECT 1 FROM public.citas c 
-    JOIN public.secretaria_doctores s ON s.id_doctor = c.id_doctor 
-    WHERE c.id_paciente = pacientes.id AND s.id_secretaria = auth.uid()
-  )
+  OR public.es_paciente_de_doctor(pacientes.id, auth.uid())
+  OR public.es_secretaria_de_paciente(pacientes.id, auth.uid())
 )
 WITH CHECK (
   auth.uid() = id_usuario 
   OR auth.uid() = id_doctor 
-  OR EXISTS (SELECT 1 FROM public.secretaria_doctores s WHERE s.id_doctor = pacientes.id_doctor AND s.id_secretaria = auth.uid())
+  OR public.es_secretaria_de_doctor(pacientes.id_doctor, auth.uid())
 );
 
 -- E. DOCTOR_SEDES Y HORARIOS_DISPONIBILIDAD
@@ -257,14 +311,14 @@ ON public.citas FOR ALL TO authenticated
 USING (
   auth.uid() = id_doctor 
   OR auth.uid() = id_paciente
-  OR EXISTS (SELECT 1 FROM public.pacientes p WHERE p.id = citas.id_paciente AND p.id_usuario = auth.uid())
-  OR EXISTS (SELECT 1 FROM public.secretaria_doctores s WHERE s.id_doctor = citas.id_doctor AND s.id_secretaria = auth.uid())
+  OR public.es_usuario_de_paciente(citas.id_paciente, auth.uid())
+  OR public.es_secretaria_de_doctor(citas.id_doctor, auth.uid())
 )
 WITH CHECK (
   auth.uid() = id_doctor 
   OR auth.uid() = id_paciente
-  OR EXISTS (SELECT 1 FROM public.pacientes p WHERE p.id = citas.id_paciente AND p.id_usuario = auth.uid())
-  OR EXISTS (SELECT 1 FROM public.secretaria_doctores s WHERE s.id_doctor = citas.id_doctor AND s.id_secretaria = auth.uid())
+  OR public.es_usuario_de_paciente(citas.id_paciente, auth.uid())
+  OR public.es_secretaria_de_doctor(citas.id_doctor, auth.uid())
 );
 
 -- H. HISTORIAS CLÍNICAS (Confidencialidad Médica Máxima)
@@ -275,7 +329,7 @@ CREATE POLICY "Acceso confidencial a historias clinicas"
 ON public.historias_clinicas FOR ALL TO authenticated
 USING (
   auth.uid() = id_doctor 
-  OR EXISTS (SELECT 1 FROM public.pacientes p WHERE p.id = historias_clinicas.id_paciente AND p.id_usuario = auth.uid())
+  OR public.es_usuario_de_paciente(historias_clinicas.id_paciente, auth.uid())
 )
 WITH CHECK (auth.uid() = id_doctor);
 
@@ -287,13 +341,13 @@ ON public.examenes_medicos FOR ALL TO authenticated
 USING (
   auth.uid() = id_doctor 
   OR auth.uid() = subido_por_usuario_id
-  OR EXISTS (SELECT 1 FROM public.pacientes p WHERE p.id = examenes_medicos.id_paciente AND p.id_usuario = auth.uid())
-  OR EXISTS (SELECT 1 FROM public.secretaria_doctores s WHERE s.id_doctor = examenes_medicos.id_doctor AND s.id_secretaria = auth.uid())
+  OR public.es_usuario_de_paciente(examenes_medicos.id_paciente, auth.uid())
+  OR public.es_secretaria_de_doctor(examenes_medicos.id_doctor, auth.uid())
 )
 WITH CHECK (
   auth.uid() = id_doctor 
   OR auth.uid() = subido_por_usuario_id 
-  OR EXISTS (SELECT 1 FROM public.pacientes p WHERE p.id = examenes_medicos.id_paciente AND p.id_usuario = auth.uid())
+  OR public.es_usuario_de_paciente(examenes_medicos.id_paciente, auth.uid())
 );
 
 -- J. PLANTILLAS DE HISTORIA
@@ -316,8 +370,8 @@ ALTER TABLE public.triage_consultas ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Acceso a triage" ON public.triage_consultas;
 CREATE POLICY "Acceso a triage" ON public.triage_consultas FOR ALL TO authenticated
 USING (
-  EXISTS (SELECT 1 FROM public.pacientes p WHERE p.id = triage_consultas.id_paciente AND p.id_usuario = auth.uid())
-  OR EXISTS (SELECT 1 FROM public.citas c WHERE c.id = triage_consultas.id_cita AND c.id_doctor = auth.uid())
+  public.es_usuario_de_paciente(triage_consultas.id_paciente, auth.uid())
+  OR public.es_cita_de_doctor(triage_consultas.id_cita, auth.uid())
 );
 
 -- M. AVALES MÉDICOS Y CENTROS MÉDICOS

@@ -499,6 +499,7 @@ class _ManualAppointmentDialogState extends State<ManualAppointmentDialog> {
               Text(widget.esEmergencia ? '3. Duración y Estudios:' : '4. Duración y Estudios Médicos:', overflow: TextOverflow.ellipsis, style: GoogleFonts.mooli(fontWeight: FontWeight.bold, fontSize: 13)),
               const SizedBox(height: 6),
               AppointmentDurationStudiesSection(
+                idDoctor: widget.idDoctor,
                 duracionMinutos: _duracionMinutos, onDuracionChanged: (mins) => setState(() => _duracionMinutos = mins),
                 estudiosSeleccionados: _estudiosSeleccionados, onEstudiosChanged: (est) => setState(() => _estudiosSeleccionados = est),
                 especialidadDoctor: widget.especialidadDoctor,
