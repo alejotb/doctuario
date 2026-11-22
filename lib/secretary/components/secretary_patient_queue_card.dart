@@ -27,8 +27,10 @@ class SecretaryPatientQueueCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hora = cita.fechaHoraEstimadaActual ?? cita.fechaHora;
-    final horaStr = hora != null
-        ? '${hora.hour.toString().padLeft(2, '0')}:${hora.minute.toString().padLeft(2, '0')}'
+    final durMin = cita.duracionMinutos ?? 30;
+    final horaFin = hora?.add(Duration(minutes: durMin));
+    final horaStr = (hora != null && horaFin != null)
+        ? '${hora.hour.toString().padLeft(2, '0')}:${hora.minute.toString().padLeft(2, '0')} – ${horaFin.hour.toString().padLeft(2, '0')}:${horaFin.minute.toString().padLeft(2, '0')} ($durMin min)'
         : '--:--';
 
     final esEmergencia = cita.esEmergencia ?? false;
@@ -75,18 +77,21 @@ class SecretaryPatientQueueCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  cita.turnoNumero != null
-                      ? 'Turno #${cita.turnoNumero} • $horaStr'
-                      : '⏰ $horaStr',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: esEmergencia
-                        ? Colors.red
-                        : esPorConfirmar
-                            ? const Color(0xFFB45309)
-                            : Colors.teal.shade800,
-                    fontSize: 15,
+                Expanded(
+                  child: Text(
+                    cita.turnoNumero != null
+                        ? 'Turno #${cita.turnoNumero} • $horaStr'
+                        : '⏰ $horaStr',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: esEmergencia
+                          ? Colors.red
+                          : esPorConfirmar
+                              ? const Color(0xFFB45309)
+                              : Colors.teal.shade800,
+                      fontSize: 13.5,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 DropdownButton<String>(

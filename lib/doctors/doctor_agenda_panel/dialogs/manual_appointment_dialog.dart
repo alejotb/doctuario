@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../../../backend/supabase/supabase.dart';
 import '../../../services/emergency_appointment_service.dart';
 import '../../../services/i18n_service.dart';
+import '../../../services/queue_schedule_service.dart';
 import 'appointment_duration_studies_section.dart';
 import 'appointment_venue_datetime_section.dart';
 import 'patient_selector_section.dart';
@@ -312,22 +313,13 @@ class _ManualAppointmentDialogState extends State<ManualAppointmentDialog> {
         DateTime fechaHoraCompleta;
         int? turnoAsignado;
         if (esOrdenLlegada) {
-          final iniDia = DateTime(_fechaCita.year, _fechaCita.month, _fechaCita.day, 0, 0, 0);
-          final finDia = DateTime(_fechaCita.year, _fechaCita.month, _fechaCita.day, 23, 59, 59);
-          int existentesDia = 0;
-          try {
-            final resDia = await docClient
-                .from('citas')
-                .select('id')
-                .eq('id_doctor', docIdValido)
-                .gte('fecha_hora', iniDia.toUtc().toIso8601String())
-                .lte('fecha_hora', finDia.toUtc().toIso8601String())
-                .neq('estado', 'cancelada');
-            existentesDia = (resDia as List).length;
-          } catch (_) {}
-          turnoAsignado = existentesDia + 1;
-          fechaHoraCompleta = DateTime(_fechaCita.year, _fechaCita.month, _fechaCita.day, 8, 0)
-              .add(Duration(minutes: existentesDia));
+          final slot = await QueueScheduleService.instance.calcularSiguienteHoraDisponible(
+            idDoctor: docIdValido,
+            fecha: _fechaCita,
+            idSede: sedeElegidaId,
+          );
+          turnoAsignado = slot.turnoNumero;
+          fechaHoraCompleta = slot.fechaHora;
         } else {
           final time = _parseTimeOfDay(_horaSeleccionadaStr);
           fechaHoraCompleta = DateTime(_fechaCita.year, _fechaCita.month, _fechaCita.day, time.hour, time.minute);

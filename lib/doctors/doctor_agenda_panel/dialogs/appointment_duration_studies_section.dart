@@ -88,12 +88,12 @@ class _AppointmentDurationStudiesSectionState
     final nueva = List<String>.from(widget.estudiosSeleccionados);
     if (nueva.contains(estudio.nombre)) {
       nueva.remove(estudio.nombre);
+      final reducida = (widget.duracionMinutos - estudio.minutosSugeridos).clamp(15, 300);
+      widget.onDuracionChanged(reducida);
     } else {
       nueva.add(estudio.nombre);
-      // Ajustar inteligentemente duración si se requiere más tiempo
-      if (estudio.minutosSugeridos > widget.duracionMinutos) {
-        widget.onDuracionChanged(estudio.minutosSugeridos);
-      }
+      final sumada = (widget.duracionMinutos + estudio.minutosSugeridos).clamp(15, 300);
+      widget.onDuracionChanged(sumada);
     }
     widget.onEstudiosChanged(nueva);
   }

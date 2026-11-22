@@ -59,6 +59,156 @@ class DoctorAgendaDesktopView extends StatefulWidget {
 }
 
 class _DoctorAgendaDesktopViewState extends State<DoctorAgendaDesktopView> {
+  bool _verListaCitados = false;
+
+  String _formatRange(CitasRow c) {
+    final start = c.fechaHoraEstimadaActual ?? c.fechaHora;
+    if (start == null) return '--:--';
+    final localStart = start.toLocal();
+    final dur = c.duracionMinutos ?? 30;
+    final localEnd = localStart.add(Duration(minutes: dur));
+    String fmt(DateTime d) => '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+    return '${fmt(localStart)} – ${fmt(localEnd)}';
+  }
+
+  Widget _buildListaCitadosDelDia(BuildContext context, bool isEs) {
+    final citas = List<CitasRow>.from(widget.citasDelDia)
+      ..sort((a, b) {
+        final ta = a.turnoNumero ?? 9999;
+        final tb = b.turnoNumero ?? 9999;
+        if (ta != tb) return ta.compareTo(tb);
+        return (a.fechaHoraEstimadaActual ?? a.fechaHora ?? DateTime(2000))
+            .compareTo(b.fechaHoraEstimadaActual ?? b.fechaHora ?? DateTime(2000));
+      });
+
+    if (citas.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.people_outline_rounded, size: 42, color: Colors.grey.shade400),
+              const SizedBox(height: 8),
+              Text(
+                isEs
+                    ? 'No hay pacientes citados para este día.'
+                    : 'No patients scheduled for this day.',
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: widget.onNuevaCita,
+                icon: const Icon(Icons.add_rounded, size: 16),
+                label: Text(isEs ? 'Agregar Cita' : 'Add Appointment'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.all(12),
+      itemCount: citas.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      itemBuilder: (context, idx) {
+        final c = citas[idx];
+        final pac = widget.pacientesMap[c.idPaciente];
+        final isSelected = widget.citaSeleccionada?.id == c.id;
+        final dur = c.duracionMinutos ?? 30;
+        final estado = (c.estado ?? 'confirmada').toLowerCase();
+        final isPending = estado == 'por_confirmar' || estado == 'solicitada';
+
+        return InkWell(
+          onTap: () => widget.onSeleccionarCita(c),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? const Color(0xFFEFF6FF)
+                  : isPending
+                      ? const Color(0xFFFFFBEB)
+                      : const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected
+                    ? const Color(0xFF0284C7)
+                    : isPending
+                        ? const Color(0xFFF59E0B)
+                        : const Color(0xFFE2E8F0),
+                width: isSelected ? 1.5 : 1.0,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0284C7).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '#${c.turnoNumero ?? (idx + 1)}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      color: Color(0xFF0369A1),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        pac?.nombre ?? 'Paciente',
+                        style: GoogleFonts.mooli(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13.5,
+                          color: const Color(0xFF0F172A),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${_formatRange(c)} • $dur min • ${c.motivo ?? 'Consulta'}',
+                        style: TextStyle(fontSize: 11.5, color: Colors.grey.shade700),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: isPending ? const Color(0xFFFEF3C7) : const Color(0xFFD1FAE5),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    estado.replaceAll('_', ' ').toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.bold,
+                      color: isPending ? const Color(0xFFB45309) : const Color(0xFF065F46),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildUnifiedScheduleGrid(BuildContext context, bool isEs) {
     const diasEs = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
     const diasEn = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -84,6 +234,22 @@ class _DoctorAgendaDesktopViewState extends State<DoctorAgendaDesktopView> {
                     ]),
                   ),
                   Row(mainAxisSize: MainAxisSize.min, children: [
+                    ChoiceChip(
+                      label: Text(isEs ? 'Agenda' : 'Schedule', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: !_verListaCitados ? Colors.white : const Color(0xFF334155))),
+                      selected: !_verListaCitados,
+                      selectedColor: const Color(0xFF0284C7),
+                      visualDensity: VisualDensity.compact,
+                      onSelected: (_) => setState(() => _verListaCitados = false),
+                    ),
+                    const SizedBox(width: 4),
+                    ChoiceChip(
+                      label: Text(isEs ? 'Citados (${widget.citasDelDia.length})' : 'Queue (${widget.citasDelDia.length})', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _verListaCitados ? Colors.white : const Color(0xFF334155))),
+                      selected: _verListaCitados,
+                      selectedColor: const Color(0xFF0284C7),
+                      visualDensity: VisualDensity.compact,
+                      onSelected: (_) => setState(() => _verListaCitados = true),
+                    ),
+                    const SizedBox(width: 8),
                     OutlinedButton(
                       style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 10), minimumSize: const Size(44, 28), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), side: const BorderSide(color: Color(0xFFCBD5E1))),
                       onPressed: widget.onIrAHoy,
@@ -140,75 +306,77 @@ class _DoctorAgendaDesktopViewState extends State<DoctorAgendaDesktopView> {
                 }),
               ),
             ),
-            // Cuerpo cuadriculado de las 7 columnas debajo de los días
+            // Cuerpo: o Lista de Citados del día seleccionado, o Rejilla horaria semanal
             Expanded(
-              child: CustomPaint(
-                painter: _DoctorGridPainter(),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: List.generate(7, (index) {
-                    final dia = widget.inicioSemana.add(Duration(days: index));
-                    final citasDia = widget.citasDeLaSemana.where((c) {
-                      final f = c.fechaHora;
-                      return f != null && f.year == dia.year && f.month == dia.month && f.day == dia.day;
-                    }).toList()
-                      ..sort((a, b) => (a.fechaHoraEstimadaActual ?? a.fechaHora ?? DateTime(2000))
-                          .compareTo(b.fechaHoraEstimadaActual ?? b.fechaHora ?? DateTime(2000)));
+              child: _verListaCitados
+                  ? _buildListaCitadosDelDia(context, isEs)
+                  : CustomPaint(
+                      painter: _DoctorGridPainter(),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: List.generate(7, (index) {
+                          final dia = widget.inicioSemana.add(Duration(days: index));
+                          final citasDia = widget.citasDeLaSemana.where((c) {
+                            final f = c.fechaHora;
+                            return f != null && f.year == dia.year && f.month == dia.month && f.day == dia.day;
+                          }).toList()
+                            ..sort((a, b) => (a.fechaHoraEstimadaActual ?? a.fechaHora ?? DateTime(2000))
+                                .compareTo(b.fechaHoraEstimadaActual ?? b.fechaHora ?? DateTime(2000)));
 
-                    final esSeleccionado = DateUtils.isSameDay(dia, widget.fechaSeleccionada);
+                          final esSeleccionado = DateUtils.isSameDay(dia, widget.fechaSeleccionada);
 
-                    return Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: esSeleccionado ? const Color(0xFFF0F9FF).withValues(alpha: 0.35) : Colors.transparent,
-                          border: Border(right: index < 6 ? const BorderSide(color: Color(0xFFCBD5E1), width: 1) : BorderSide.none),
-                        ),
-                        child: citasDia.isEmpty
-                            ? Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Align(
-                                  alignment: Alignment.topCenter,
-                                  child: SizedBox(
-                                    width: double.infinity,
-                                    child: OutlinedButton.icon(
-                                      onPressed: () => widget.onAgendarEnHorario(dia, "08:00 AM"),
-                                      style: OutlinedButton.styleFrom(
-                                        backgroundColor: Colors.white, foregroundColor: const Color(0xFF0284C7),
-                                        side: const BorderSide(color: Color(0xFFBAE6FD)),
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                      ),
-                                      icon: const Icon(Icons.add_circle_outline_rounded, size: 15),
-                                      label: Text(isEs ? 'Agendar Cita para este Día' : 'Book Appointment for this Day', textAlign: TextAlign.center, style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold)),
-                                    ),
-                                  ),
-                                ),
-                              )
-                            : ListView(
-                                padding: const EdgeInsets.all(6),
-                                children: [
-                                  ...citasDia.map((c) => _buildCitaCard(c, widget.pacientesMap[c.idPaciente], dia, widget.citaSeleccionada?.id == c.id, isEs)),
-                                  const SizedBox(height: 4),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: ElevatedButton.icon(
-                                      onPressed: () => widget.onAgendarEnHorario(dia, "08:00 AM"),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFFE2E8F0), foregroundColor: const Color(0xFF334155), elevation: 0,
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7), side: const BorderSide(color: Color(0xFFCBD5E1))),
-                                      ),
-                                      icon: const Icon(Icons.add_rounded, size: 14),
-                                      label: Text(isEs ? 'Agregar nueva cita' : 'Add new appointment', textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                                    ),
-                                  ),
-                                ],
+                          return Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: esSeleccionado ? const Color(0xFFF0F9FF).withValues(alpha: 0.35) : Colors.transparent,
+                                border: Border(right: index < 6 ? const BorderSide(color: Color(0xFFCBD5E1), width: 1) : BorderSide.none),
                               ),
+                              child: citasDia.isEmpty
+                                  ? Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Align(
+                                        alignment: Alignment.topCenter,
+                                        child: SizedBox(
+                                          width: double.infinity,
+                                          child: OutlinedButton.icon(
+                                            onPressed: () => widget.onAgendarEnHorario(dia, "08:00 AM"),
+                                            style: OutlinedButton.styleFrom(
+                                              backgroundColor: Colors.white, foregroundColor: const Color(0xFF0284C7),
+                                              side: const BorderSide(color: Color(0xFFBAE6FD)),
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            ),
+                                            icon: const Icon(Icons.add_circle_outline_rounded, size: 15),
+                                            label: Text(isEs ? 'Agendar Cita para este Día' : 'Book Appointment for this Day', textAlign: TextAlign.center, style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold)),
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : ListView(
+                                      padding: const EdgeInsets.all(6),
+                                      children: [
+                                        ...citasDia.map((c) => _buildCitaCard(c, widget.pacientesMap[c.idPaciente], dia, widget.citaSeleccionada?.id == c.id, isEs)),
+                                        const SizedBox(height: 4),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: ElevatedButton.icon(
+                                            onPressed: () => widget.onAgendarEnHorario(dia, "08:00 AM"),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(0xFFE2E8F0), foregroundColor: const Color(0xFF334155), elevation: 0,
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7), side: const BorderSide(color: Color(0xFFCBD5E1))),
+                                            ),
+                                            icon: const Icon(Icons.add_rounded, size: 14),
+                                            label: Text(isEs ? 'Agregar nueva cita' : 'Add new appointment', textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                            ),
+                          );
+                        }),
                       ),
-                    );
-                  }),
-                ),
-              ),
+                    ),
             ),
           ],
         ),
@@ -217,8 +385,7 @@ class _DoctorAgendaDesktopViewState extends State<DoctorAgendaDesktopView> {
   }
 
   Widget _buildCitaCard(CitasRow c, UsuariosRow? pac, DateTime dia, bool isSelected, bool isEs) {
-    final hora = c.fechaHoraEstimadaActual ?? c.fechaHora;
-    final horaStr = hora != null ? '${hora.hour.toString().padLeft(2, '0')}:${hora.minute.toString().padLeft(2, '0')}' : '--:--';
+    final horaStr = _formatRange(c);
     final estado = c.estado ?? 'solicitada';
     final esSobrecitaPorConfirmar = estado == 'solicitada';
 
@@ -253,7 +420,7 @@ class _DoctorAgendaDesktopViewState extends State<DoctorAgendaDesktopView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text(horaStr, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0284C7))),
+              Expanded(child: Text(horaStr, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFF0284C7)))),
               Row(mainAxisSize: MainAxisSize.min, children: [
                 if (c.llegadaConfirmada == true) const Padding(padding: EdgeInsets.only(right: 3), child: Icon(Icons.check_circle, size: 10, color: Color(0xFF10B981))),
                 Container(width: 7, height: 7, decoration: BoxDecoration(shape: BoxShape.circle, color: estadoColor)),

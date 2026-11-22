@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../backend/supabase/supabase.dart';
 import '../../../flutter_flow/flutter_flow_theme.dart';
 import '../../../services/appointment_cancellation_service.dart';
+import '../../../services/queue_schedule_service.dart';
 
 /// Modal bottom sheet para modificar el horario, estado y detalles de una cita médica.
 class EditAppointmentDialog extends StatefulWidget {
@@ -134,6 +135,13 @@ class _EditAppointmentDialogState extends State<EditAppointmentDialog> {
           },
           matchingRows: (q) => q.eq('id', widget.cita.id),
         );
+        if (widget.cita.idDoctor != null && widget.cita.idDoctor!.isNotEmpty) {
+          await QueueScheduleService.instance.recalcularColaDelDia(
+            idDoctor: widget.cita.idDoctor!,
+            fecha: nuevaFechaHora,
+            idSede: widget.cita.idSede,
+          );
+        }
 
         if (widget.cita.idDoctor != null && _huboCambioHorario) {
           await AppointmentCancellationService.instance.reprogramarCitaIndividual(

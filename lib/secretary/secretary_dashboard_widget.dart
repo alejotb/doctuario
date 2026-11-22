@@ -10,6 +10,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/services/i18n_service.dart';
 import '/services/secretary_management_service.dart';
 import '/services/appointment_sync_service.dart';
+import '/services/queue_schedule_service.dart';
 import 'components/secretary_doctor_switcher_banner.dart';
 import 'dialogs/secretary_patient_detail_modal.dart';
 import 'dialogs/upload_patient_study_dialog.dart';
@@ -218,7 +219,24 @@ class _SecretaryDashboardWidgetState extends State<SecretaryDashboardWidget> {
 
   Future<void> _cambiarEstadoCita(CitasRow cita, String nuevo) async {
     final data = <String, dynamic>{'estado': nuevo};
-    if (nuevo == 'en_espera' && (cita.llegadaConfirmada != true)) { data['llegada_confirmada'] = true; data['hora_llegada'] = DateTime.now().toIso8601String(); }
+    final estadoAnterior = (cita.estado ?? '').toLowerCase();
+    if (nuevo == 'en_espera' && (cita.llegadaConfirmada != true)) {
+      data['llegada_confirmada'] = true;
+      data['hora_llegada'] = DateTime.now().toIso8601String();
+    }
+    if (nuevo == 'confirmada' &&
+        (estadoAnterior == 'por_confirmar' || estadoAnterior == 'solicitada') &&
+        cita.idDoctor != null) {
+      final slot = await QueueScheduleService.instance.calcularSiguienteHoraDisponible(
+        idDoctor: cita.idDoctor!,
+        fecha: cita.fechaHora ?? _fecha,
+        idSede: cita.idSede,
+      );
+      data['fecha_hora'] = slot.fechaHora.toUtc().toIso8601String();
+      data['fecha_hora_estimada_actual'] = slot.fechaHora.toUtc().toIso8601String();
+      data['turno_numero'] = slot.turnoNumero;
+      data['posicion_cola'] = slot.turnoNumero;
+    }
     await CitasTable().update(data: data, matchingRows: (q) => q.eq('id', cita.id));
     if (cita.idDoctor != null) {
       await AppointmentSyncService.instance.actualizarEstadoCita(idCita: cita.id, idDoctor: cita.idDoctor!, nuevoEstado: nuevo);
