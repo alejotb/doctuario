@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../backend/supabase/supabase.dart';
 import '../../services/medical_exam_service.dart';
+import '../../services/venezuela_locations.dart';
 
 /// Modal dialog for selecting a patient, picking specific study category and name, and uploading file with status 'por_revisar'.
 class UploadPatientStudyDialog extends StatefulWidget {
@@ -81,22 +82,36 @@ class _UploadPatientStudyDialogState extends State<UploadPatientStudyDialog> {
     setState(() => _buscando = true);
     try {
       final docClient = DualDatabaseConfig.instance.doctorClient;
-      List<UsuariosRow> rows = [];
+      final qNorm = VenezuelaLocations.normalize(q);
+      final Map<String, UsuariosRow> merged = {};
+      bool matchesRow(UsuariosRow r) =>
+          VenezuelaLocations.containsIgnoreAccents(r.nombre, qNorm) ||
+          VenezuelaLocations.containsIgnoreAccents(r.cedula, qNorm) ||
+          VenezuelaLocations.containsIgnoreAccents(r.telefono, qNorm);
+
       try {
-        final resPac = await docClient.from('pacientes').select()
-            .or('nombre.ilike.%$q%,cedula.ilike.%$q%,telefono.ilike.%$q%').limit(8);
-        rows = (resPac as List).map((d) => UsuariosRow(Map<String, dynamic>.from(d))).toList();
+        final resPac = await docClient.from('pacientes').select().limit(120);
+        for (final d in (resPac as List)) {
+          final r = UsuariosRow(Map<String, dynamic>.from(d));
+          if (matchesRow(r)) {
+            merged[r.id] = r;
+            if (merged.length >= 10) break;
+          }
+        }
       } catch (_) {}
 
-      if (rows.isEmpty) {
-        try {
-          final resUsr = await docClient.from('usuarios').select().neq('rol', 'doctor')
-              .or('nombre.ilike.%$q%,cedula.ilike.%$q%,telefono.ilike.%$q%').limit(8);
-          rows = (resUsr as List).map((d) => UsuariosRow(Map<String, dynamic>.from(d))).toList();
-        } catch (_) {}
-      }
+      try {
+        final resUsr = await docClient.from('usuarios').select().limit(120);
+        for (final d in (resUsr as List)) {
+          final r = UsuariosRow(Map<String, dynamic>.from(d));
+          if (matchesRow(r) && !merged.containsKey(r.id)) {
+            merged[r.id] = r;
+            if (merged.length >= 12) break;
+          }
+        }
+      } catch (_) {}
 
-      if (mounted) setState(() { _pacientesEncontrados = rows; _buscando = false; });
+      if (mounted) setState(() { _pacientesEncontrados = merged.values.take(10).toList(); _buscando = false; });
     } catch (_) {
       if (mounted) setState(() => _buscando = false);
     }

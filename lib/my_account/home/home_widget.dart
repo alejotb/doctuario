@@ -82,7 +82,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                 context.pushNamed(
                   DoctorPublicProfileWidget.routeName,
                   queryParameters: {
-                    'idDoctor': serializeParam(doctor.id, ParamType.String),
+                    'alias': serializeParam(doctor.alias, ParamType.String),
                     'nombreDoctor': serializeParam(doctor.name, ParamType.String),
                     'especialidadDoctor': serializeParam(doctor.specialty, ParamType.String),
                     'fotoUrlDoctor': serializeParam(doctor.photoUrl, ParamType.String),
@@ -189,7 +189,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                 context.pushNamed(
                   RequestAppointmentWidget.routeName,
                   queryParameters: {
-                    'idDoctor': serializeParam(doctor.id, ParamType.String),
+                    'alias': serializeParam(doctor.alias, ParamType.String),
                     'nombreDoctor': serializeParam(doctor.name, ParamType.String),
                     'especialidadDoctor': serializeParam(doctor.specialty, ParamType.String),
                   }.withoutNulls,
@@ -386,96 +386,138 @@ class _HomeWidgetState extends State<HomeWidget> {
                     alignment: const AlignmentDirectional(-1.0, 0.0),
                     child: Padding(
                       padding: const EdgeInsetsDirectional.fromSTEB(0.0, 14.0, 0.0, 0.0),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: MedicalSpecialtiesService.list.map((specialty) {
-                            return Padding(
-                              padding: const EdgeInsetsDirectional.only(end: 16.0),
-                              child: InkWell(
-                                splashColor: Colors.transparent,
-                                focusColor: Colors.transparent,
-                                hoverColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
-                                onTap: () async {
-                                  context.pushNamed(CategoryListWidget.routeName);
-                                },
-                                child: SizedBox(
-                                  width: 72.0,
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                        width: 58.0,
-                                        height: 58.0,
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              FlutterFlowTheme.of(context).secondary,
-                                              FlutterFlowTheme.of(context).primary,
-                                              FlutterFlowTheme.of(context).secondary
-                                            ],
-                                            stops: const [0.0, 1.0, 1.0],
-                                            begin: const AlignmentDirectional(1.0, -0.5),
-                                            end: const AlignmentDirectional(-1.0, 0.5),
-                                          ),
-                                          borderRadius: BorderRadius.circular(100.0),
-                                          boxShadow: const [
-                                            BoxShadow(
-                                              blurRadius: 6.0,
-                                              color: Color(0x15000000),
-                                              offset: Offset(0.0, 2.0),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Center(
-                                          child: Container(
-                                            width: 38.0,
-                                            height: 38.0,
-                                            clipBehavior: Clip.antiAlias,
-                                            decoration: const BoxDecoration(
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: Image.asset(
-                                              specialty.assetImage,
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (_, __, ___) => const Icon(
-                                                Icons.medical_services_rounded,
-                                                color: Colors.white,
-                                                size: 22.0,
+                      child: Stack(
+                        alignment: Alignment.centerRight,
+                        children: [
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            physics: const BouncingScrollPhysics(),
+                            padding: const EdgeInsets.only(right: 28.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: MedicalSpecialtiesService.list.map((specialty) {
+                                return Padding(
+                                  padding: const EdgeInsetsDirectional.only(end: 16.0),
+                                  child: InkWell(
+                                    splashColor: Colors.transparent,
+                                    focusColor: Colors.transparent,
+                                    hoverColor: Colors.transparent,
+                                    highlightColor: Colors.transparent,
+                                    onTap: () async {
+                                      context.pushNamed(
+                                        CategoryListWidget.routeName,
+                                        queryParameters: {
+                                          'specialty': serializeParam(specialty.nameEs, ParamType.String),
+                                        }.withoutNulls,
+                                      );
+                                    },
+                                    child: SizedBox(
+                                      width: 72.0,
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            width: 58.0,
+                                            height: 58.0,
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  FlutterFlowTheme.of(context).secondary,
+                                                  FlutterFlowTheme.of(context).primary,
+                                                  FlutterFlowTheme.of(context).secondary
+                                                ],
+                                                stops: const [0.0, 1.0, 1.0],
+                                                begin: const AlignmentDirectional(1.0, -0.5),
+                                                end: const AlignmentDirectional(-1.0, 0.5),
                                               ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 0.0),
-                                        child: Text(
-                                          specialty.getLocalizedName(I18nService.instance.isSpanish),
-                                          textAlign: TextAlign.center,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                font: GoogleFonts.mooli(
-                                                  fontWeight: FontWeight.w500,
+                                              borderRadius: BorderRadius.circular(100.0),
+                                              boxShadow: const [
+                                                BoxShadow(
+                                                  blurRadius: 6.0,
+                                                  color: Color(0x15000000),
+                                                  offset: Offset(0.0, 2.0),
                                                 ),
-                                                fontSize: 11.5,
-                                                letterSpacing: 0.0,
-                                                color: FlutterFlowTheme.of(context).primaryText,
+                                              ],
+                                            ),
+                                            child: Center(
+                                              child: Container(
+                                                width: 38.0,
+                                                height: 38.0,
+                                                clipBehavior: Clip.antiAlias,
+                                                decoration: const BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: Image.asset(
+                                                  specialty.assetImage,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (_, __, ___) => const Icon(
+                                                    Icons.medical_services_rounded,
+                                                    color: Colors.white,
+                                                    size: 22.0,
+                                                  ),
+                                                ),
                                               ),
-                                        ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 0.0),
+                                            child: Text(
+                                              specialty.getLocalizedName(I18nService.instance.isSpanish),
+                                              textAlign: TextAlign.center,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                    font: GoogleFonts.mooli(
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
+                                                    fontSize: 11.5,
+                                                    letterSpacing: 0.0,
+                                                    color: FlutterFlowTheme.of(context).primaryText,
+                                                  ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ],
+                                    ),
                                   ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                          // Indicador visual de que la barra es scrolleable horizontalmente
+                          IgnorePointer(
+                            child: Container(
+                              width: 36.0,
+                              height: 92.0,
+                              alignment: Alignment.centerRight,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  colors: [
+                                    FlutterFlowTheme.of(context).secondaryBackground.withValues(alpha: 0.0),
+                                    FlutterFlowTheme.of(context).secondaryBackground.withValues(alpha: 0.92),
+                                  ],
                                 ),
                               ),
-                            );
-                          }).toList(),
-                        ),
+                              child: Container(
+                                width: 22.0,
+                                height: 22.0,
+                                decoration: BoxDecoration(
+                                  color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.14),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.chevron_right_rounded,
+                                  size: 16.0,
+                                  color: FlutterFlowTheme.of(context).primary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -554,10 +596,12 @@ class _HomeWidgetState extends State<HomeWidget> {
                       ],
                     ),
                   ),
-                  // Dynamic Doctors List from Supabase Database
+                  // Dynamic Doctors List from Supabase Database (max 5 same city randomly rotated, then nearby cities, then others)
                   FutureBuilder<List<DoctorItem>>(
                     future: DoctorsService.instance.getDoctors(
                       filterCity: PatientLocationService.instance.currentLocation,
+                      maxSameCity: 5,
+                      randomizeRotation: true,
                       limit: 15,
                     ),
                     builder: (context, snapshot) {
@@ -622,13 +666,50 @@ class _HomeWidgetState extends State<HomeWidget> {
 
                       return SizedBox(
                         height: 255.0,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: doctors.length,
-                          itemBuilder: (context, index) {
-                            return _buildDoctorCard(context, doctors[index]);
-                          },
+                        child: Stack(
+                          alignment: Alignment.centerRight,
+                          children: [
+                            ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              padding: const EdgeInsets.only(right: 28.0),
+                              itemCount: doctors.length,
+                              itemBuilder: (context, index) {
+                                return _buildDoctorCard(context, doctors[index]);
+                              },
+                            ),
+                            if (doctors.length > 2)
+                              IgnorePointer(
+                                child: Container(
+                                  width: 34.0,
+                                  height: 255.0,
+                                  alignment: Alignment.centerRight,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
+                                      colors: [
+                                        FlutterFlowTheme.of(context).secondaryBackground.withValues(alpha: 0.0),
+                                        FlutterFlowTheme.of(context).secondaryBackground.withValues(alpha: 0.88),
+                                      ],
+                                    ),
+                                  ),
+                                  child: Container(
+                                    width: 24.0,
+                                    height: 24.0,
+                                    decoration: BoxDecoration(
+                                      color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.14),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.chevron_right_rounded,
+                                      size: 17.0,
+                                      color: FlutterFlowTheme.of(context).primary,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       );
                     },

@@ -242,9 +242,9 @@ class _ManualAppointmentDialogState extends State<ManualAppointmentDialog> {
           'id': newId,
           'id_doctor': docIdValido,
           'nombre': _nombreCtrl.text.trim(),
-          'cedula': cedulaFinal,
-          'telefono': telefonoFinal,
-          'ciudad_origen': ciudadFinal,
+          if (cedulaFinal != null) 'cedula': cedulaFinal,
+          if (telefonoFinal != null) 'telefono': telefonoFinal,
+          if (ciudadFinal != null) 'ciudad_origen': ciudadFinal,
           if (fechaNacStr != null) 'fecha_nacimiento': fechaNacStr,
           'es_menor_edad': _esNino,
           if (_esFamiliar) 'parentesco': _lazoFamiliar,
@@ -253,22 +253,43 @@ class _ManualAppointmentDialogState extends State<ManualAppointmentDialog> {
           'cuenta_vinculada': false,
           'created_at': nowIso,
         };
-        await docClient.from('pacientes').upsert(pacPayload);
+        try {
+          await docClient.from('pacientes').insert(pacPayload);
+        } catch (pacErr) {
+          debugPrint('Aviso insertando paciente completo, intentando payload base: $pacErr');
+          await docClient.from('pacientes').insert({
+            'id': newId,
+            'id_doctor': docIdValido,
+            'nombre': _nombreCtrl.text.trim(),
+            if (cedulaFinal != null) 'cedula': cedulaFinal,
+            if (telefonoFinal != null) 'telefono': telefonoFinal,
+            if (ciudadFinal != null) 'ciudad_origen': ciudadFinal,
+            if (fechaNacStr != null) 'fecha_nacimiento': fechaNacStr,
+            'created_at': nowIso,
+          });
+        }
         pacienteIdFinal = newId;
       } else {
         pacienteIdFinal = _pacienteSel!.id;
-        final existePac = await docClient.from('pacientes').select('id').eq('id', pacienteIdFinal).maybeSingle();
-        if (existePac == null) {
-          final existeUsr = await docClient.from('usuarios').select('id').eq('id', pacienteIdFinal).maybeSingle();
-          await docClient.from('pacientes').upsert({
-            'id': pacienteIdFinal,
-            if (existeUsr != null) 'id_usuario': pacienteIdFinal,
-            'id_doctor': docIdValido,
-            'nombre': _pacienteSel!.nombre ?? 'Paciente',
-            if (_pacienteSel!.cedula != null) 'cedula': _pacienteSel!.cedula,
-            if (_pacienteSel!.telefono != null) 'telefono': _pacienteSel!.telefono,
-            'cuenta_vinculada': existeUsr != null,
-          });
+        try {
+          final existePac = await docClient.from('pacientes').select('id').eq('id', pacienteIdFinal).maybeSingle();
+          if (existePac == null) {
+            final existeUsr = await docClient.from('usuarios').select('id').eq('id', pacienteIdFinal).maybeSingle();
+            await docClient.from('pacientes').insert({
+              'id': pacienteIdFinal,
+              if (existeUsr != null) 'id_usuario': pacienteIdFinal,
+              'id_doctor': docIdValido,
+              'nombre': _pacienteSel!.nombre ?? 'Paciente',
+              if ((_pacienteSel!.cedula ?? '').isNotEmpty) 'cedula': _pacienteSel!.cedula,
+              if ((_pacienteSel!.telefono ?? '').isNotEmpty) 'telefono': _pacienteSel!.telefono,
+              if ((_pacienteSel!.ciudadOrigen ?? '').isNotEmpty) 'ciudad_origen': _pacienteSel!.ciudadOrigen,
+              'created_at': nowIso,
+            });
+          }
+        } catch (e) {
+          // Si ya existe en pacientes bajo otro doctor (invisible por RLS en SELECT),
+          // el trigger BEFORE INSERT en citas (garantizar_paciente_al_crear_cita) o la fila existente permitirá crear la cita.
+          debugPrint('Aviso sincronizando paciente registrado antes de cita: $e');
         }
       }
 
@@ -347,7 +368,13 @@ class _ManualAppointmentDialogState extends State<ManualAppointmentDialog> {
             await docClient.from('doctores').upsert({'id': docIdValido});
             await docClient.from('citas').insert(citaData);
           } else if (err.toString().contains('citas_id_paciente_fkey') || err.toString().contains('23503')) {
-            await docClient.from('pacientes').upsert({'id': pacienteIdFinal, if (_crearNuevo) 'nombre': _nombreCtrl.text.trim()});
+            try {
+              await docClient.from('pacientes').insert({
+                'id': pacienteIdFinal,
+                'id_doctor': docIdValido,
+                'nombre': _crearNuevo ? _nombreCtrl.text.trim() : (_pacienteSel?.nombre ?? 'Paciente'),
+              });
+            } catch (_) {}
             await docClient.from('citas').insert(citaData);
           } else {
             rethrow;

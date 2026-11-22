@@ -308,7 +308,7 @@ class VenezuelaLocations {
     return result;
   }
 
-  /// Normaliza una cadena removiendo acentos y convirtiendo a minúsculas
+  /// Normaliza una cadena removiendo acentos/diacríticos y convirtiendo a minúsculas
   static String normalize(String text) {
     var str = text.toLowerCase().trim();
     str = str.replaceAll(RegExp(r'[áàäâã]'), 'a');
@@ -316,7 +316,17 @@ class VenezuelaLocations {
     str = str.replaceAll(RegExp(r'[íìïî]'), 'i');
     str = str.replaceAll(RegExp(r'[óòöôõ]'), 'o');
     str = str.replaceAll(RegExp(r'[úùüû]'), 'u');
+    str = str.replaceAll(RegExp(r'[ñ]'), 'n');
+    str = str.replaceAll(RegExp(r'[ç]'), 'c');
     return str;
+  }
+
+  /// Verifica si [source] contiene [query] ignorando mayúsculas y acentos
+  static bool containsIgnoreAccents(String? source, String query) {
+    if (source == null || source.isEmpty) return false;
+    final normQuery = normalize(query);
+    if (normQuery.isEmpty) return true;
+    return normalize(source).contains(normQuery);
   }
 
   /// Encuentra el estado canónico correspondiente a un texto crudo (ej: "Trujillo State", "Estado Trujillo", "Distrito Capital")
@@ -392,6 +402,26 @@ class VenezuelaLocations {
       orElse: () => const VenezuelaLocation(estado: '', ciudades: []),
     );
     return match.ciudades;
+  }
+
+  /// Devuelve el nombre del estado al que pertenece una ciudad (o texto de ubicación "Ciudad, Estado")
+  static String? getEstadoDeCiudad(String? rawLocation) {
+    if (rawLocation == null || rawLocation.trim().isEmpty) return null;
+    final parts = rawLocation.split(',').map((p) => p.trim()).where((p) => p.isNotEmpty).toList();
+    if (parts.length > 1) {
+      final bySecond = matchEstado(parts.last);
+      if (bySecond != null) return bySecond;
+    }
+    final cityNorm = normalize(parts.first);
+    for (final loc in list) {
+      for (final c in loc.ciudades) {
+        final normC = normalize(c);
+        if (normC == cityNorm || (cityNorm.isNotEmpty && (normC.contains(cityNorm) || cityNorm.contains(normC)))) {
+          return loc.estado;
+        }
+      }
+    }
+    return matchEstado(rawLocation);
   }
 
   /// Filtra estados por texto

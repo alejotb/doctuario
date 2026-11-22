@@ -6,6 +6,7 @@ import '../../flutter_flow/flutter_flow_util.dart';
 import '../../appointments/request_appointment/request_appointment_widget.dart';
 import '../../components/skeleton_shimmer.dart';
 import '../../my_account/home/home_widget.dart';
+import '../../services/doctors_service.dart';
 import '../doctor_share_helper.dart';
 import 'components/doctor_availability_slots_widget.dart';
 
@@ -50,15 +51,10 @@ class _DoctorPublicProfileWidgetState extends State<DoctorPublicProfileWidget> {
   Future<void> _cargarDatosDoctor() async {
     setState(() => _isLoading = true);
     try {
-      if (_resolvedDoctorId.isEmpty && widget.alias != null && widget.alias!.trim().isNotEmpty) {
-        final byAlias = await DoctoresTable().queryRows(
-          queryFn: (q) => q.eq('alias', widget.alias!.trim()).limit(1),
-        );
-        if (byAlias.isNotEmpty) {
-          _doctorInfo = byAlias.first;
-          _resolvedDoctorId = byAlias.first.id;
-        }
-      }
+      _resolvedDoctorId = await DoctorsService.instance.resolveDoctorId(
+        idDoctor: widget.idDoctor,
+        alias: widget.alias,
+      );
 
       if (_resolvedDoctorId.isEmpty) {
         if (mounted) setState(() => _isLoading = false);

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../backend/supabase/supabase.dart';
 import '../../../flutter_flow/flutter_flow_theme.dart';
+import '../../../services/doctors_service.dart';
 
 /// Tarjeta de presentación individual de un paciente en el listado del doctor.
 ///
@@ -33,6 +34,23 @@ class DoctorPatientCard extends StatelessWidget {
     required this.onTap,
   });
 
+  bool get _esDoctor {
+    final rol = (paciente.rol ?? '').toLowerCase().trim();
+    return rol == 'doctor' || rol.contains('medico') || rol.contains('médico');
+  }
+
+  String get _prefijoDoctor {
+    final isFemale = DoctorItem.isFemaleDoctor(paciente.genero, paciente.nombre ?? '');
+    return isFemale ? 'Dra.' : 'Dr.';
+  }
+
+  String get _displayNombre {
+    final raw = (paciente.nombre ?? 'Paciente').trim();
+    if (!_esDoctor) return raw;
+    final clean = raw.replaceFirst(RegExp(r'^(dr\.|dra\.|doctor|doctora)\s+', caseSensitive: false), '').trim();
+    return '$_prefijoDoctor ${clean.isEmpty ? raw : clean}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
@@ -51,7 +69,9 @@ class DoctorPatientCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         side: esPreferencial
             ? BorderSide(color: Colors.amber.shade600, width: 1.5)
-            : BorderSide(color: theme.alternate),
+            : _esDoctor
+                ? const BorderSide(color: Color(0xFF0284C7), width: 1.2)
+                : BorderSide(color: theme.alternate),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -90,7 +110,7 @@ class DoctorPatientCard extends StatelessWidget {
       backgroundImage: hasPhoto ? NetworkImage(paciente.fotoUrl!) : null,
       child: !hasPhoto
           ? Icon(
-              Icons.person,
+              _esDoctor ? Icons.medical_services_rounded : Icons.person,
               size: 26,
               color: theme.primary,
             )
@@ -98,7 +118,7 @@ class DoctorPatientCard extends StatelessWidget {
     );
   }
 
-  /// Columna principal: Nombre del paciente, badge de preferencial y etiquetas secundarias
+  /// Columna principal: Nombre del paciente, badge de preferencial/colega y etiquetas secundarias
   Widget _buildMainInfo(FlutterFlowTheme theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,7 +128,7 @@ class DoctorPatientCard extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                paciente.nombre ?? 'Paciente',
+                _displayNombre,
                 style: GoogleFonts.mooli(
                   fontWeight: FontWeight.bold,
                   fontSize: 15.0,
@@ -118,6 +138,25 @@ class DoctorPatientCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+            if (_esDoctor) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE0F2FE),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFF0284C7).withValues(alpha: 0.4)),
+                ),
+                child: Text(
+                  _prefijoDoctor,
+                  style: const TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0369A1),
+                  ),
+                ),
+              ),
+            ],
             if (esPreferencial) ...[
               const SizedBox(width: 6),
               _buildPreferencialBadge(),

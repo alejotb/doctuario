@@ -4,6 +4,7 @@ import '/services/venezuela_locations.dart';
 
 class DoctorItem {
   final String id;
+  final String alias; // Slug público seguro (sin exponer UUID en URLs)
   final String rawName;
   final String name; // e.g. "Doctor Carlos Silva" or "Doctora Gabriela Mendoza"
   final String title; // "Doctor" or "Doctora" (also accessible as "Dr." / "Dra.")
@@ -19,6 +20,7 @@ class DoctorItem {
 
   DoctorItem({
     required this.id,
+    required this.alias,
     required this.rawName,
     required this.name,
     required this.title,
@@ -32,6 +34,22 @@ class DoctorItem {
     this.phone,
     this.email,
   });
+
+  /// Construye un slug/alias limpio a partir del nombre y sufijo corto sin exponer el UUID completo.
+  static String buildPublicAlias({String? dbAlias, required String cleanName, required String docId, bool isFemale = false}) {
+    if (dbAlias != null && dbAlias.trim().isNotEmpty) {
+      return dbAlias.trim();
+    }
+    final prefix = isFemale ? 'dra' : 'dr';
+    final normalizedName = VenezuelaLocations.normalize(cleanName)
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
+        .replaceAll(RegExp(r'^-+|-+$'), '');
+    final shortCode = docId.replaceAll('-', '').length >= 4
+        ? docId.replaceAll('-', '').substring(0, 4).toLowerCase()
+        : docId.toLowerCase();
+    final slugBase = normalizedName.isNotEmpty ? '$prefix-$normalizedName' : '$prefix-medico';
+    return shortCode.isNotEmpty ? '$slugBase-$shortCode' : slugBase;
+  }
 
   /// Determina si un nombre/género corresponde a Femenino o Masculino
   static bool isFemaleDoctor(String? genderValue, String rawName) {
@@ -93,6 +111,13 @@ class DoctorItem {
     if (cleanName.isEmpty) cleanName = 'Especialista';
 
     final formattedName = '$title $cleanName';
+    final dbAlias = docMap['alias']?.toString();
+    final effectiveAlias = buildPublicAlias(
+      dbAlias: dbAlias,
+      cleanName: cleanName,
+      docId: docId,
+      isFemale: isFemale,
+    );
     final specialty = (docMap['especialidad']?.toString() ??
             userMap?['doctor_referencia_nombre']?.toString() ??
             userMap?['especialidad']?.toString() ??
@@ -110,6 +135,7 @@ class DoctorItem {
 
     return DoctorItem(
       id: docId,
+      alias: effectiveAlias,
       rawName: cleanName,
       name: formattedName,
       title: title,
@@ -130,12 +156,66 @@ class DoctorsService {
   static final DoctorsService instance = DoctorsService._internal();
   DoctorsService._internal();
 
+  /// Resuelve un identificador público (`alias`) o UUID a su `id` real de doctor en base de datos.
+  Future<String> resolveDoctorId({String? idDoctor, String? alias}) async {
+    final uuidRegex = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
+    final candidateId = (idDoctor ?? '').trim();
+    final candidateAlias = (alias ?? '').trim();
+
+    if (candidateId.isNotEmpty && uuidRegex.hasMatch(candidateId)) {
+      return candidateId;
+    }
+
+    final slugToResolve = candidateAlias.isNotEmpty ? candidateAlias : candidateId;
+    if (slugToResolve.isEmpty) return '';
+
+    if (uuidRegex.hasMatch(slugToResolve)) {
+      return slugToResolve;
+    }
+
+    // 1. Buscar coincidencia exacta en doctores.alias
+    try {
+      final byAlias = await DoctoresTable().queryRows(
+        queryFn: (q) => q.eq('alias', slugToResolve).limit(1),
+      );
+      if (byAlias.isNotEmpty) return byAlias.first.id;
+    } catch (_) {}
+
+    // 2. Fallback por coincidencia de alias autogenerado en el catálogo
+    try {
+      final allDocs = await getDoctors(
+        excludeCurrentDoctor: false,
+        onlyApproved: false,
+        onlyCatalogVisible: false,
+      );
+      for (final d in allDocs) {
+        if (d.alias.toLowerCase() == slugToResolve.toLowerCase()) {
+          return d.id;
+        }
+      }
+      // Si el slug termina en "-xxxx" (4 caracteres hex del ID), buscar coincidencia de prefijo de ID
+      final parts = slugToResolve.toLowerCase().split('-');
+      if (parts.length >= 2 && parts.last.length == 4) {
+        final code = parts.last;
+        for (final d in allDocs) {
+          if (d.id.replaceAll('-', '').toLowerCase().startsWith(code)) {
+            return d.id;
+          }
+        }
+      }
+    } catch (_) {}
+
+    return candidateId;
+  }
+
   /// Consulta EXCLUSIVAMENTE los doctores reales registrados en la base de datos de Supabase.
   /// No incluye ninguna plantilla o doctor falso. Si no hay registros, retorna una lista vacía.
   Future<List<DoctorItem>> getDoctors({
     String? filterCity,
     String? filterSpecialty,
     int? limit,
+    int? maxSameCity,
+    bool randomizeRotation = true,
     String? excludeDoctorId,
     bool excludeCurrentDoctor = true,
     bool onlyApproved = true,
@@ -241,7 +321,6 @@ class DoctorsService {
         doctors.removeWhere((doc) => doc.id == effectiveExcludeId);
       }
 
-      // Si no hay doctores registrados en la base de datos, retornar lista vacía
       if (doctors.isEmpty) {
         return [];
       }
@@ -256,23 +335,50 @@ class DoctorsService {
             .toList();
       }
 
-      // 8. Priorizar por ciudad si fue especificada
+      // 8. Organizar por cercanía con rotación aleatoria justa:
+      // 1º Misma ciudad (rotados aleatoriamente, opcionalmente hasta maxSameCity)
+      // 2º Ciudades cercanas (mismo estado/región)
+      // 3º Otras ciudades
       if (filterCity != null &&
           filterCity.isNotEmpty &&
           !filterCity.toLowerCase().contains('todas')) {
         final cityQuery = VenezuelaLocations.normalize(filterCity.split(',').first.trim());
+        final targetState = VenezuelaLocations.getEstadoDeCiudad(filterCity);
+        final targetStateNorm = targetState != null ? VenezuelaLocations.normalize(targetState) : '';
 
-        final sameCityDoctors = doctors.where((doc) {
-          if (doc.city == null) return false;
-          return VenezuelaLocations.normalize(doc.city!).contains(cityQuery);
-        }).toList();
+        final sameCityDoctors = <DoctorItem>[];
+        final nearbyCityDoctors = <DoctorItem>[];
+        final otherCityDoctors = <DoctorItem>[];
 
-        final otherCityDoctors = doctors.where((doc) {
-          if (doc.city == null) return true;
-          return !VenezuelaLocations.normalize(doc.city!).contains(cityQuery);
-        }).toList();
+        for (final doc in doctors) {
+          final docCityRaw = doc.city ?? '';
+          final docCityNorm = VenezuelaLocations.normalize(docCityRaw);
+          if (cityQuery.isNotEmpty && docCityNorm.isNotEmpty && docCityNorm.contains(cityQuery)) {
+            sameCityDoctors.add(doc);
+          } else {
+            final docState = VenezuelaLocations.getEstadoDeCiudad(docCityRaw);
+            final docStateNorm = docState != null ? VenezuelaLocations.normalize(docState) : '';
+            if (targetStateNorm.isNotEmpty && docStateNorm == targetStateNorm) {
+              nearbyCityDoctors.add(doc);
+            } else {
+              otherCityDoctors.add(doc);
+            }
+          }
+        }
 
-        doctors = [...sameCityDoctors, ...otherCityDoctors];
+        if (randomizeRotation) {
+          sameCityDoctors.shuffle();
+          nearbyCityDoctors.shuffle();
+          otherCityDoctors.shuffle();
+        }
+
+        final cappedSameCity = (maxSameCity != null && maxSameCity > 0)
+            ? sameCityDoctors.take(maxSameCity).toList()
+            : sameCityDoctors;
+
+        doctors = [...cappedSameCity, ...nearbyCityDoctors, ...otherCityDoctors];
+      } else if (randomizeRotation) {
+        doctors.shuffle();
       }
 
       if (limit != null && limit > 0) {

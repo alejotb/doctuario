@@ -129,7 +129,13 @@ GoRouter createRouter(
         FFRoute(name: CancelappointmentWidget.routeName, path: CancelappointmentWidget.routePath, builder: (_, __) => const CancelappointmentWidget()),
         FFRoute(name: ReviewWidget.routeName, path: ReviewWidget.routePath, builder: (_, __) => const ReviewWidget()),
         FFRoute(name: SessionWidget.routeName, path: SessionWidget.routePath, builder: (_, __) => const SessionWidget()),
-        FFRoute(name: CategoryListWidget.routeName, path: CategoryListWidget.routePath, builder: (_, __) => const CategoryListWidget()),
+        FFRoute(
+          name: CategoryListWidget.routeName,
+          path: CategoryListWidget.routePath,
+          builder: (_, params) => CategoryListWidget(
+            specialty: params.getParam('specialty', ParamType.String),
+          ),
+        ),
         FFRoute(
           name: CreateProfileWidget.routeName,
           path: CreateProfileWidget.routePath,
@@ -177,6 +183,7 @@ GoRouter createRouter(
           path: RequestAppointmentWidget.routePath,
           builder: (_, params) => RequestAppointmentWidget(
             idDoctor: params.getParam('idDoctor', ParamType.String) ?? '',
+            alias: params.getParam('alias', ParamType.String),
             nombreDoctor: params.getParam('nombreDoctor', ParamType.String),
             especialidadDoctor: params.getParam('especialidadDoctor', ParamType.String),
           ),

@@ -4,6 +4,7 @@ import '../../backend/supabase/supabase.dart';
 import '../../flutter_flow/flutter_flow_theme.dart';
 import '../../services/doctor_subscription_service.dart';
 import '../../services/special_treatment_service.dart';
+import '../../services/venezuela_locations.dart';
 import '../components/doctor_create_patient_dialog.dart';
 import '../components/doctor_patient_import_dialog.dart';
 import '../doctor_patient_detail/doctor_patient_detail_widget.dart';
@@ -158,6 +159,12 @@ class _DoctorPacientesListWidgetState extends State<DoctorPacientesListWidget> {
                   (u.fotoUrl?.trim().isNotEmpty ?? false)) {
                 existing['foto_url'] = u.fotoUrl;
               }
+              if (u.rol != null && u.rol!.trim().isNotEmpty) {
+                existing['rol'] = u.rol;
+              }
+              if (u.genero != null && u.genero!.trim().isNotEmpty) {
+                existing['genero'] = u.genero;
+              }
             } else {
               pacienteMap[u.id] = Map<String, dynamic>.from(u.data);
             }
@@ -189,7 +196,7 @@ class _DoctorPacientesListWidgetState extends State<DoctorPacientesListWidget> {
 
   /// Retorna la lista de pacientes filtrada por búsqueda, estado, fechas y orden
   List<UsuariosRow> get _pacientesFiltrados {
-    final query = _searchController.text.trim().toLowerCase();
+    final query = VenezuelaLocations.normalize(_searchController.text);
     final filtrados = _pacientes.where((p) {
       if (_filtroActivo == 'preferenciales' &&
           _esPreferencialMap[p.id] != true) {
@@ -222,10 +229,10 @@ class _DoctorPacientesListWidgetState extends State<DoctorPacientesListWidget> {
       }
 
       if (query.isEmpty) return true;
-      final nom = (p.nombre ?? '').toLowerCase();
-      final ced = (p.cedula ?? '').toLowerCase();
-      final tlf = (p.telefono ?? '').toLowerCase();
-      final eml = (p.email ?? '').toLowerCase();
+      final nom = VenezuelaLocations.normalize(p.nombre ?? '');
+      final ced = VenezuelaLocations.normalize(p.cedula ?? '');
+      final tlf = VenezuelaLocations.normalize(p.telefono ?? '');
+      final eml = VenezuelaLocations.normalize(p.email ?? '');
       return nom.contains(query) ||
           ced.contains(query) ||
           tlf.contains(query) ||

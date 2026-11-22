@@ -87,15 +87,19 @@ class _DoctorCreatePatientDialogState extends State<DoctorCreatePatientDialog> {
     try {
       final docClient = DualDatabaseConfig.instance.doctorClient;
 
-      // Verificar si ya existe en la base privada por cédula
+      // Verificar si ya existe para este doctor por cédula
       if (cedula.isNotEmpty) {
-        final existing = await docClient.from('usuarios').select('id, nombre').eq('cedula', cedula);
+        final existing = await docClient
+            .from('pacientes')
+            .select('id, nombre')
+            .eq('id_doctor', widget.idDoctor)
+            .eq('cedula', cedula);
         if ((existing as List).isNotEmpty) {
           if (mounted) {
             setState(() => _isSaving = false);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Ya existe un paciente con cédula $cedula (${existing.first['nombre']})'),
+                content: Text('Ya tienes un paciente registrado con cédula $cedula (${existing.first['nombre']})'),
                 backgroundColor: Colors.orange.shade800,
               ),
             );
@@ -105,7 +109,7 @@ class _DoctorCreatePatientDialogState extends State<DoctorCreatePatientDialog> {
       }
 
       final newPatientId = const Uuid().v4();
-      final nowIso = DateTime.now().toIso8601String();
+      final nowIso = DateTime.now().toUtc().toIso8601String();
 
       final fechaNacStr = _fechaNacimiento != null
           ? '${_fechaNacimiento!.year.toString().padLeft(4, '0')}-${_fechaNacimiento!.month.toString().padLeft(2, '0')}-${_fechaNacimiento!.day.toString().padLeft(2, '0')}'
@@ -120,26 +124,20 @@ class _DoctorCreatePatientDialogState extends State<DoctorCreatePatientDialog> {
         if (telefono.isNotEmpty) 'telefono': telefono,
         if (email.isNotEmpty) 'email': email,
         if (ciudad.isNotEmpty) 'ciudad_origen': ciudad,
-        'es_foraneo': _esForaneo,
         if (fechaNacStr != null) 'fecha_nacimiento': fechaNacStr,
         if (_tipoSangre != null) 'tipo_sangre': _tipoSangre,
-        if (antecedentes.isNotEmpty) 'antecedentes': antecedentes,
         'created_at': nowIso,
       };
 
       try {
-        await docClient.from('pacientes').insert(pacientePayload);
+        await docClient.from('pacientes').insert({
+          ...pacientePayload,
+          'es_foraneo': _esForaneo,
+          if (antecedentes.isNotEmpty) 'antecedentes': antecedentes,
+        });
       } catch (err) {
-        debugPrint('Error guardando en pacientes: $err');
-        try {
-          await docClient.from('usuarios').insert({
-            'id': newPatientId, 'nombre': nombre,
-            if (cedula.isNotEmpty) 'cedula': cedula,
-            if (telefono.isNotEmpty) 'telefono': telefono,
-            'rol': 'paciente', 'created_at': nowIso,
-          });
-          await docClient.from('pacientes').upsert({'id': newPatientId, 'created_at': nowIso});
-        } catch (_) {}
+        debugPrint('Aviso guardando columnas extendidas en pacientes, insertando payload base: $err');
+        await docClient.from('pacientes').insert(pacientePayload);
       }
 
       // 3. Crear primera historia clínica si ingresó antecedentes

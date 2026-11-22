@@ -5,11 +5,13 @@ import '../../flutter_flow/flutter_flow_theme.dart';
 import '../../services/symptom_triage_service.dart';
 import '../../services/location_maps_service.dart';
 import '../../services/appointment_sync_service.dart';
+import '../../services/doctors_service.dart';
 import '../../components/loading_button.dart';
 import '../../components/skeleton_shimmer.dart';
 
 class RequestAppointmentWidget extends StatefulWidget {
   final String idDoctor;
+  final String? alias;
   final String? nombreDoctor;
   final String? especialidadDoctor;
   final DateTime? fechaHoraInicial;
@@ -18,7 +20,8 @@ class RequestAppointmentWidget extends StatefulWidget {
 
   const RequestAppointmentWidget({
     super.key,
-    required this.idDoctor,
+    this.idDoctor = '',
+    this.alias,
     this.nombreDoctor,
     this.especialidadDoctor,
     this.fechaHoraInicial,
@@ -35,6 +38,7 @@ class RequestAppointmentWidget extends StatefulWidget {
 }
 
 class _RequestAppointmentWidgetState extends State<RequestAppointmentWidget> {
+  late String _resolvedDoctorId;
   List<DoctorSedesRow> _sedes = [];
   String? _sedeSeleccionadaId;
   DateTime _fechaSeleccionada = DateTime.now().add(const Duration(days: 1));
@@ -54,6 +58,7 @@ class _RequestAppointmentWidgetState extends State<RequestAppointmentWidget> {
   @override
   void initState() {
     super.initState();
+    _resolvedDoctorId = widget.idDoctor;
     if (widget.fechaHoraInicial != null) {
       _fechaSeleccionada = widget.fechaHoraInicial!;
       _horaSeleccionada = TimeOfDay(
@@ -70,8 +75,12 @@ class _RequestAppointmentWidgetState extends State<RequestAppointmentWidget> {
   Future<void> _cargarDatosDoctor() async {
     setState(() => _isLoading = true);
     try {
+      _resolvedDoctorId = await DoctorsService.instance.resolveDoctorId(
+        idDoctor: widget.idDoctor,
+        alias: widget.alias,
+      );
       _sedes = await DoctorSedesTable().queryRows(
-        queryFn: (q) => q.eq('id_doctor', widget.idDoctor),
+        queryFn: (q) => q.eq('id_doctor', _resolvedDoctorId),
       );
       if (_sedeSeleccionadaId == null && _sedes.isNotEmpty) {
         _sedeSeleccionadaId = _sedes.first.id;
@@ -121,7 +130,7 @@ class _RequestAppointmentWidgetState extends State<RequestAppointmentWidget> {
       return;
     }
 
-    if (currentUserId == widget.idDoctor) {
+    if (currentUserId == _resolvedDoctorId) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No puedes solicitar una cita médica contigo mismo.'), backgroundColor: Colors.redAccent),
       );
@@ -169,7 +178,7 @@ class _RequestAppointmentWidgetState extends State<RequestAppointmentWidget> {
       );
 
       final res = await AppointmentSyncService.instance.solicitarCitaPaciente(
-        idDoctor: widget.idDoctor,
+        idDoctor: _resolvedDoctorId,
         idPaciente: currentUserId,
         idSede: _sedeSeleccionadaId!,
         fechaHora: fechaHoraCompleta,

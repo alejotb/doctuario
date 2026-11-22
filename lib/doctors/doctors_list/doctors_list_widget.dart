@@ -2,6 +2,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/services/i18n_service.dart';
 import '/services/doctors_service.dart';
+import '/services/venezuela_locations.dart';
 import '/components/skeleton_shimmer.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +49,7 @@ class _DoctorsListWidgetState extends State<DoctorsListWidget> {
         context.pushNamed(
           DoctorPublicProfileWidget.routeName,
           queryParameters: {
-            'idDoctor': serializeParam(doctor.id, ParamType.String),
+            'alias': serializeParam(doctor.alias, ParamType.String),
             'nombreDoctor': serializeParam(doctor.name, ParamType.String),
             'especialidadDoctor': serializeParam(doctor.specialty, ParamType.String),
             'fotoUrlDoctor': serializeParam(doctor.photoUrl, ParamType.String),
@@ -272,12 +273,12 @@ class _DoctorsListWidgetState extends State<DoctorsListWidget> {
 
                       var doctors = snapshot.data ?? [];
                       if (_searchQuery.trim().isNotEmpty) {
-                        final q = _searchQuery.toLowerCase().trim();
+                        final q = VenezuelaLocations.normalize(_searchQuery);
                         doctors = doctors.where((d) =>
-                            d.name.toLowerCase().contains(q) ||
-                            d.specialty.toLowerCase().contains(q) ||
-                            (d.city != null && d.city!.toLowerCase().contains(q)) ||
-                            (d.clinics != null && d.clinics!.toLowerCase().contains(q))).toList();
+                            VenezuelaLocations.normalize(d.name).contains(q) ||
+                            VenezuelaLocations.normalize(d.specialty).contains(q) ||
+                            (d.city != null && VenezuelaLocations.normalize(d.city!).contains(q)) ||
+                            (d.clinics != null && VenezuelaLocations.normalize(d.clinics!).contains(q))).toList();
                       }
 
                       if (doctors.isEmpty) {

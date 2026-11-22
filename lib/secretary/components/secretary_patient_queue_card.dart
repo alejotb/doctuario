@@ -210,6 +210,47 @@ class SecretaryPatientQueueCard extends StatelessWidget {
                   _badge('📋 ORDEN LLEGADA', Colors.purple),
               ],
             ),
+            if ((cita.tipoExoneracion != null && cita.tipoExoneracion != 'ninguno') ||
+                (paciente?.tipoExoneracion != null && paciente?.tipoExoneracion != 'ninguno')) ...[
+              const SizedBox(height: 8),
+              Builder(builder: (_) {
+                final tipo = (cita.tipoExoneracion != null && cita.tipoExoneracion != 'ninguno')
+                    ? cita.tipoExoneracion!
+                    : (paciente?.tipoExoneracion ?? '');
+                final monto = (cita.tipoExoneracion != null && cita.tipoExoneracion != 'ninguno')
+                    ? cita.montoExoneracion
+                    : paciente?.montoExoneracion;
+
+                String textoExo;
+                if (tipo == 'exonerado' || (tipo == 'porcentaje' && (monto ?? 0) >= 100)) {
+                  textoExo = '💚 PACIENTE EXONERADO POR EL MÉDICO (Sin cobro de consulta)';
+                } else if (tipo == 'porcentaje' && monto != null) {
+                  textoExo = '💲 DESCUENTO AUTORIZADO: ${monto.toStringAsFixed(0)}% sobre tarifa';
+                } else if (tipo == 'monto_fijo' && monto != null) {
+                  textoExo = '💲 MONTO ESPECIAL AUTORIZADO: \$${monto.toStringAsFixed(2)}';
+                } else {
+                  textoExo = '💚 BENEFICIO / EXONERACIÓN AUTORIZADA POR EL MÉDICO';
+                }
+
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFECFDF5),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFF6EE7B7)),
+                  ),
+                  child: Text(
+                    textoExo,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF047857),
+                    ),
+                  ),
+                );
+              }),
+            ],
             const Divider(height: 16),
 
             // Botón de acción rápida: Marcar Llegada / Pasar a consultorio

@@ -49,6 +49,8 @@ class _EditAppointmentDialogState extends State<EditAppointmentDialog> {
   final TextEditingController _motivoCambioController = TextEditingController();
   late bool _esEmergencia;
   late bool _tratoEspecial;
+  late String _tipoExoneracion; // 'ninguno', 'exonerado', 'porcentaje', 'monto_fijo'
+  late TextEditingController _montoExoneracionCtrl;
   bool _isSaving = false;
 
   @override
@@ -65,12 +67,17 @@ class _EditAppointmentDialogState extends State<EditAppointmentDialog> {
     _notasController = TextEditingController(text: widget.cita.motivo ?? '');
     _esEmergencia = widget.cita.esEmergencia ?? false;
     _tratoEspecial = widget.cita.tratoEspecial ?? false;
+    _tipoExoneracion = widget.cita.tipoExoneracion ?? 'ninguno';
+    _montoExoneracionCtrl = TextEditingController(
+      text: widget.cita.montoExoneracion != null ? widget.cita.montoExoneracion!.toStringAsFixed(0) : '',
+    );
   }
 
   @override
   void dispose() {
     _notasController.dispose();
     _motivoCambioController.dispose();
+    _montoExoneracionCtrl.dispose();
     super.dispose();
   }
 
@@ -107,6 +114,12 @@ class _EditAppointmentDialogState extends State<EditAppointmentDialog> {
           idPaciente: widget.cita.idPaciente,
         );
       } else {
+        final double? montoExo = _tipoExoneracion == 'ninguno'
+            ? null
+            : _tipoExoneracion == 'exonerado'
+                ? 100.0
+                : double.tryParse(_montoExoneracionCtrl.text.trim().replaceAll(',', '.'));
+
         await CitasTable().update(
           data: {
             'fecha_hora': supaSerialize<DateTime>(nuevaFechaHora),
@@ -116,6 +129,8 @@ class _EditAppointmentDialogState extends State<EditAppointmentDialog> {
             'es_emergencia': _esEmergencia,
             'trato_especial': _tratoEspecial,
             'motivo': _notasController.text.trim(),
+            'tipo_exoneracion': _tipoExoneracion == 'ninguno' ? null : _tipoExoneracion,
+            'monto_exoneracion': montoExo,
           },
           matchingRows: (q) => q.eq('id', widget.cita.id),
         );
@@ -392,6 +407,59 @@ class _EditAppointmentDialogState extends State<EditAppointmentDialog> {
                 ),
               ],
             ),
+
+            const SizedBox(height: 14),
+
+            Text(
+              'Exoneración o Descuento en Consulta (visible para Secretaría)',
+              style: GoogleFonts.mooli(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: [
+                ChoiceChip(
+                  label: const Text('Tarifa normal'),
+                  selected: _tipoExoneracion == 'ninguno',
+                  onSelected: (_) => setState(() => _tipoExoneracion = 'ninguno'),
+                ),
+                ChoiceChip(
+                  label: const Text('💚 Exonerado (100%)'),
+                  selected: _tipoExoneracion == 'exonerado',
+                  selectedColor: Colors.green.shade100,
+                  onSelected: (_) => setState(() => _tipoExoneracion = 'exonerado'),
+                ),
+                ChoiceChip(
+                  label: const Text('Descuento (%)'),
+                  selected: _tipoExoneracion == 'porcentaje',
+                  selectedColor: Colors.teal.shade100,
+                  onSelected: (_) => setState(() => _tipoExoneracion = 'porcentaje'),
+                ),
+                ChoiceChip(
+                  label: const Text('Monto especial (\$)'),
+                  selected: _tipoExoneracion == 'monto_fijo',
+                  selectedColor: Colors.teal.shade100,
+                  onSelected: (_) => setState(() => _tipoExoneracion = 'monto_fijo'),
+                ),
+              ],
+            ),
+            if (_tipoExoneracion == 'porcentaje' || _tipoExoneracion == 'monto_fijo') ...[
+              const SizedBox(height: 10),
+              TextField(
+                controller: _montoExoneracionCtrl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  isDense: true,
+                  labelText: _tipoExoneracion == 'porcentaje'
+                      ? 'Porcentaje de descuento (%)'
+                      : 'Monto especial a cobrar (\$)',
+                  hintText: _tipoExoneracion == 'porcentaje' ? 'Ej. 50' : 'Ej. 20',
+                  suffixText: _tipoExoneracion == 'porcentaje' ? '%' : '\$',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ],
 
             const SizedBox(height: 14),
 

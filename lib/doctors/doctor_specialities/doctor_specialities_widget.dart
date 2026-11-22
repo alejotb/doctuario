@@ -205,7 +205,12 @@ class _DoctorSpecialitiesWidgetState extends State<DoctorSpecialitiesWidget> {
                           highlightColor: Colors.transparent,
                           borderRadius: BorderRadius.circular(14.0),
                           onTap: () async {
-                            context.pushNamed(CategoryListWidget.routeName);
+                            context.pushNamed(
+                              CategoryListWidget.routeName,
+                              queryParameters: {
+                                'specialty': serializeParam(specialty.nameEs, ParamType.String),
+                              }.withoutNulls,
+                            );
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),

@@ -22,8 +22,8 @@ class EmergencyAppointmentService {
       'id_doctor': idDoctor,
       'id_paciente': idPaciente,
       'id_sede': idSede,
-      'fecha_hora': ahora.toIso8601String(),
-      'fecha_hora_estimada_actual': ahora.toIso8601String(),
+      'fecha_hora': ahora.toUtc().toIso8601String(),
+      'fecha_hora_estimada_actual': ahora.toUtc().toIso8601String(),
       'estado': 'en_consulta',
       'motivo': '[EMERGENCIA] $motivo',
       'es_emergencia': true,
@@ -32,7 +32,10 @@ class EmergencyAppointmentService {
       'modalidad_atencion': 'orden_llegada',
     };
     try {
-      await DualDatabaseConfig.instance.doctorClient.from('pacientes').upsert({'id': idPaciente});
+      await DualDatabaseConfig.instance.doctorClient.from('pacientes').insert({
+        'id': idPaciente,
+        'id_doctor': idDoctor,
+      });
     } catch (_) {}
 
     CitasRow nuevaCitaEmergencia;
@@ -46,7 +49,10 @@ class EmergencyAppointmentService {
         nuevaCitaEmergencia = await CitasTable().insert(baseData);
       } else if (e.toString().contains('citas_id_paciente_fkey')) {
         try {
-          await DualDatabaseConfig.instance.doctorClient.from('pacientes').upsert({'id': idPaciente});
+          await DualDatabaseConfig.instance.doctorClient.from('pacientes').insert({
+            'id': idPaciente,
+            'id_doctor': idDoctor,
+          });
           nuevaCitaEmergencia = await CitasTable().insert(baseData);
         } catch (_) {
           rethrow;

@@ -92,30 +92,38 @@ class AppointmentSyncService {
 
     debugPrint('AppointmentSyncService: Iniciando solicitud de cita $citaId...');
 
-    // Asegurar que el paciente existe en la tabla pacientes (para satisfacer citas_id_paciente_fkey)
+    // Asegurar que el paciente existe en la tabla pacientes (el trigger BEFORE INSERT en citas también lo garantiza con SECURITY DEFINER)
     try {
       final centralClient = DualDatabaseConfig.instance.patientClient;
-      final usrData = await centralClient
-          .from('usuarios')
-          .select('nombre, telefono, cedula, email')
+      final existePac = await centralClient
+          .from('pacientes')
+          .select('id')
           .eq('id', idPaciente)
           .maybeSingle();
+      if (existePac == null) {
+        final usrData = await centralClient
+            .from('usuarios')
+            .select('nombre, telefono, cedula, email, ciudad_origen')
+            .eq('id', idPaciente)
+            .maybeSingle();
 
-      await centralClient.from('pacientes').upsert({
-        'id': idPaciente,
-        'id_usuario': idPaciente,
-        if (usrData?['nombre'] != null) 'nombre': usrData!['nombre'],
-        if (usrData?['telefono'] != null) 'telefono': usrData!['telefono'],
-        if (usrData?['cedula'] != null) 'cedula': usrData!['cedula'],
-        if (usrData?['email'] != null) 'email': usrData!['email'],
-        'created_at': nowIso,
-      });
-      debugPrint('AppointmentSyncService: Registro de paciente asegurado en tabla pacientes con nombre.');
+        await centralClient.from('pacientes').insert({
+          'id': idPaciente,
+          'id_usuario': idPaciente,
+          'id_doctor': idDoctor,
+          if (usrData?['nombre'] != null) 'nombre': usrData!['nombre'],
+          if (usrData?['telefono'] != null) 'telefono': usrData!['telefono'],
+          if (usrData?['cedula'] != null) 'cedula': usrData!['cedula'],
+          if (usrData?['email'] != null) 'email': usrData!['email'],
+          if (usrData?['ciudad_origen'] != null) 'ciudad_origen': usrData!['ciudad_origen'],
+          'created_at': nowIso,
+        });
+      }
     } catch (e) {
-      debugPrint('Nota asegurando paciente en Base Central: $e');
+      debugPrint('Nota asegurando paciente antes de cita (el trigger de BD lo respalda): $e');
     }
 
-    // 1. Guardar en Base de Datos Central (Garantiza bloqueo inmediato del horario)
+    // 1. Guardar en Base de Datos Unificada
     try {
       final centralClient = DualDatabaseConfig.instance.patientClient;
       final citasColision = await centralClient
@@ -130,62 +138,25 @@ class AppointmentSyncService {
           'El horario seleccionado ya no se encuentra disponible. Por favor elige otro horario libre.',
         );
       }
-      try {
-        await centralClient.from('citas').insert(payload);
-        debugPrint('AppointmentSyncService: Registrada en Base Central con estado por_confirmar.');
-      } catch (insertErr) {
-        if (insertErr.toString().contains('citas_id_paciente_fkey') || insertErr.toString().contains('23503')) {
-          debugPrint('FK citas_id_paciente_fkey detectada, creando paciente de respaldo...');
-          try {
-            await centralClient.from('pacientes').upsert({'id': idPaciente});
-            await centralClient.from('citas').insert(payload);
-            debugPrint('AppointmentSyncService: Cita registrada tras auto-crear paciente.');
-          } catch (_) {
-            rethrow;
-          }
-        } else {
-          rethrow;
-        }
-      }
+      await centralClient.from('citas').insert(payload);
+      debugPrint('AppointmentSyncService: Registrada en Base Unificada con estado por_confirmar.');
     } catch (e) {
-      debugPrint('Error crítico insertando cita en Base Central: $e');
+      debugPrint('Error crítico insertando cita: $e');
       if (e.toString().contains('ya no se encuentra disponible')) {
         rethrow;
       }
-      throw Exception('No se pudo apartar el horario en la plataforma central: $e');
-    }
-
-    // 2. Conectar y replicar en la Base de Datos Privada del Doctor
-    bool sincronizadoEnDoctor = false;
-    try {
-      final tenantData = await DualDatabaseConfig.instance
-          .consultarYConectarTenantDoctor(idDoctor);
-
-      if (tenantData != null) {
-        final doctorClient = DualDatabaseConfig.instance.doctorClient;
-        await doctorClient.from('citas').insert(payload);
-        sincronizadoEnDoctor = true;
-        debugPrint('AppointmentSyncService: Replicada exitosamente en Base Privada del Doctor.');
-      } else {
-        debugPrint('Nota: Doctor sin tenant dedicado; se mantendrá en Base Central compartida.');
-        sincronizadoEnDoctor = true;
-      }
-    } catch (e) {
-      debugPrint('Nota de sincronización: Base del doctor pendiente de réplica ($e).');
-      // La cita queda en Central y el dashboard del médico la sincronizará al abrir sesión.
+      throw Exception('No se pudo apartar el horario en la plataforma: $e');
     }
 
     return {
       'id': citaId,
       'estado': 'por_confirmar',
       'fecha_hora': fechaHora,
-      'sincronizado_doctor': sincronizadoEnDoctor,
+      'sincronizado_doctor': true,
     };
   }
 
   /// Registra una cita presencial o telefónica creada directamente en el consultorio:
-  /// 1. Inserta en la Base de Datos del Doctor como 'confirmada'.
-  /// 2. Inserta el bloqueo en la Base Central para que el horario quede no disponible públicamente.
   Future<bool> bloquearHorarioDesdeClinica({
     required String idDoctor,
     required String idSede,
@@ -219,24 +190,18 @@ class AppointmentSyncService {
         final client = DualDatabaseConfig.instance.patientClient;
         final pac = await client.from('pacientes').select('id').eq('id', idPaciente).maybeSingle();
         if (pac == null) {
-          await client.from('pacientes').upsert({'id': idPaciente, 'created_at': nowIso});
+          await client.from('pacientes').insert({
+            'id': idPaciente,
+            'id_doctor': idDoctor,
+            'created_at': nowIso,
+          });
         }
       } catch (_) {}
     }
 
     try {
-      // 1. Guardar en Base de Datos de la Clínica
       final doctorClient = DualDatabaseConfig.instance.doctorClient;
       await doctorClient.from('citas').insert(payload);
-
-      // 2. Bloquear horario en Base Central (para que ningún paciente lo elija)
-      try {
-        final centralClient = DualDatabaseConfig.instance.patientClient;
-        await centralClient.from('citas').upsert(payload);
-      } catch (e) {
-        debugPrint('Nota sincronizando bloqueo en Base Central: $e');
-      }
-
       return true;
     } catch (e) {
       debugPrint('Error en bloquearHorarioDesdeClinica: $e');

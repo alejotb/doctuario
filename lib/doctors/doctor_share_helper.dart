@@ -2,17 +2,23 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../backend/supabase/supabase.dart';
+import '../services/doctors_service.dart';
 
 class DoctorShareHelper {
   /// Construye el enlace exclusivo de agendamiento directo para un doctor usando su alias público (sin exponer UUID).
-  static String generarEnlaceExclusivo(String idDoctor, {String? alias}) {
+  static String generarEnlaceExclusivo(String idDoctor, {String? alias, String? nombreDoctor, bool isFemale = false}) {
     final base = kIsWeb && Uri.base.hasAuthority
         ? '${Uri.base.scheme}://${Uri.base.authority}'
         : 'https://mediconnect.app';
-    if (alias != null && alias.trim().isNotEmpty) {
-      return '$base/doctorPublicProfile?alias=${Uri.encodeComponent(alias.trim())}';
-    }
-    return '$base/doctorPublicProfile?idDoctor=${Uri.encodeComponent(idDoctor)}';
+    final effectiveAlias = (alias != null && alias.trim().isNotEmpty)
+        ? alias.trim()
+        : DoctorItem.buildPublicAlias(
+            dbAlias: alias,
+            cleanName: nombreDoctor ?? 'medico',
+            docId: idDoctor,
+            isFemale: isFemale,
+          );
+    return '$base/doctorPublicProfile?alias=${Uri.encodeComponent(effectiveAlias)}';
   }
 
   /// Convierte cualquier cadena de hora o timestamp (ej. "08:00:00" o "1970-01-01 08:00:00")
@@ -97,7 +103,11 @@ class DoctorShareHelper {
       }
     }
 
-    final enlace = generarEnlaceExclusivo(doctorInfo.id, alias: doctorInfo.alias);
+    final enlace = generarEnlaceExclusivo(
+      doctorInfo.id,
+      alias: doctorInfo.alias,
+      nombreDoctor: nombre,
+    );
     buffer.writeln('📲 _Agenda tu cita médica directamente aquí:_');
     buffer.writeln(enlace);
     return buffer.toString();

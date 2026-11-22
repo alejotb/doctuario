@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../backend/supabase/supabase.dart';
+import '../../../services/venezuela_locations.dart';
 
 class PatientSelectorSection extends StatefulWidget {
   const PatientSelectorSection({
@@ -58,37 +59,52 @@ class _PatientSelectorSectionState extends State<PatientSelectorSection> {
     setState(() => _buscando = true);
     try {
       final docClient = DualDatabaseConfig.instance.doctorClient;
-      List<UsuariosRow> rows = [];
+      final qNorm = VenezuelaLocations.normalize(q);
+      final Map<String, UsuariosRow> mergedById = {};
+      final Set<String> seenCedulas = {};
+
+      bool matchesRow(UsuariosRow row) {
+        return VenezuelaLocations.containsIgnoreAccents(row.nombre, qNorm) ||
+            VenezuelaLocations.containsIgnoreAccents(row.cedula, qNorm) ||
+            VenezuelaLocations.containsIgnoreAccents(row.telefono, qNorm);
+      }
+
       try {
-        final resPac = await docClient
-            .from('pacientes')
-            .select()
-            .or('nombre.ilike.%$q%,cedula.ilike.%$q%,telefono.ilike.%$q%')
-            .limit(8);
-        rows = (resPac as List)
-            .map((d) => UsuariosRow(Map<String, dynamic>.from(d)))
-            .toList();
+        final resPac = await docClient.from('pacientes').select().limit(120);
+        for (final d in (resPac as List)) {
+          final map = Map<String, dynamic>.from(d as Map);
+          final row = UsuariosRow(map);
+          if (matchesRow(row)) {
+            mergedById[row.id] = row;
+            if ((row.cedula ?? '').trim().isNotEmpty) {
+              seenCedulas.add(row.cedula!.trim().toLowerCase());
+            }
+            if (mergedById.length >= 10) break;
+          }
+        }
       } catch (e) {
         debugPrint('Búsqueda en pacientes fallback: $e');
       }
 
-      if (rows.isEmpty) {
-        try {
-          final resUsr = await docClient
-              .from('usuarios')
-              .select()
-              .neq('rol', 'doctor')
-              .or('nombre.ilike.%$q%,cedula.ilike.%$q%,telefono.ilike.%$q%')
-              .limit(8);
-          rows = (resUsr as List)
-              .map((d) => UsuariosRow(Map<String, dynamic>.from(d)))
-              .toList();
-        } catch (_) {}
-      }
+      try {
+        final resUsr = await docClient.from('usuarios').select().limit(120);
+        for (final d in (resUsr as List)) {
+          final map = Map<String, dynamic>.from(d as Map);
+          final row = UsuariosRow(map);
+          if (matchesRow(row)) {
+            final ced = (row.cedula ?? '').trim().toLowerCase();
+            if (!mergedById.containsKey(row.id) && (ced.isEmpty || !seenCedulas.contains(ced))) {
+              mergedById[row.id] = row;
+              if (ced.isNotEmpty) seenCedulas.add(ced);
+            }
+            if (mergedById.length >= 15) break;
+          }
+        }
+      } catch (_) {}
 
       if (mounted) {
         setState(() {
-          _resultados = rows;
+          _resultados = mergedById.values.take(10).toList();
           _buscando = false;
         });
       }

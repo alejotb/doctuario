@@ -6,6 +6,7 @@ import '../backend/supabase/supabase.dart';
 import '../flutter_flow/flutter_flow_theme.dart';
 import '../services/doctor_subscription_service.dart';
 import '../services/medical_exam_service.dart';
+import '../services/venezuela_locations.dart';
 
 class PatientExamsWidget extends StatefulWidget {
   final String idPaciente;
@@ -47,16 +48,16 @@ class _PatientExamsWidgetState extends State<PatientExamsWidget> {
   }
 
   List<ExamenesMedicosRow> get _examenesFiltrados {
-    final q = _searchCtrl.text.trim().toLowerCase();
+    final q = VenezuelaLocations.normalize(_searchCtrl.text);
     final list = _examenes.where((ex) {
       if (_tipoFiltro != 'todos') {
-        final t = (ex.tipoExamen ?? '').toLowerCase();
-        if (!t.contains(_tipoFiltro.toLowerCase())) return false;
+        final t = VenezuelaLocations.normalize(ex.tipoExamen ?? '');
+        if (!t.contains(VenezuelaLocations.normalize(_tipoFiltro))) return false;
       }
       if (q.isEmpty) return true;
-      final tit = (ex.titulo ?? '').toLowerCase();
-      final tipo = (ex.tipoExamen ?? '').toLowerCase();
-      final esp = (ex.especialidad ?? '').toLowerCase();
+      final tit = VenezuelaLocations.normalize(ex.titulo ?? '');
+      final tipo = VenezuelaLocations.normalize(ex.tipoExamen ?? '');
+      final esp = VenezuelaLocations.normalize(ex.especialidad ?? '');
       return tit.contains(q) || tipo.contains(q) || esp.contains(q);
     }).toList();
 

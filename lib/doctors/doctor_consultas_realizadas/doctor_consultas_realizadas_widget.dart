@@ -5,6 +5,7 @@ import '../../backend/supabase/supabase.dart';
 import '../../flutter_flow/flutter_flow_theme.dart';
 import '../../services/doctor_consultation_draft_service.dart';
 import '../../services/i18n_service.dart';
+import '../../services/venezuela_locations.dart';
 import '../doctor_consultation/doctor_consultation_workspace_widget.dart';
 import '../doctor_agenda_panel/dialogs/medical_print_preview_dialog.dart';
 
@@ -177,14 +178,14 @@ class _DoctorConsultasRealizadasWidgetState
   }
 
   List<CitasRow> _filtrarCitas(List<CitasRow> lista) {
-    final query = _searchCtrl.text.trim().toLowerCase();
+    final query = VenezuelaLocations.normalize(_searchCtrl.text);
     if (query.isEmpty) return lista;
     return lista.where((c) {
       final pac = _pacientesMap[c.idPaciente];
-      final nombre = (pac?.nombre ?? '').toLowerCase();
-      final cedula = (pac?.cedula ?? '').toLowerCase();
-      final motivo = (c.motivo ?? '').toLowerCase();
-      final notas = (c.notasMedicas ?? '').toLowerCase();
+      final nombre = VenezuelaLocations.normalize(pac?.nombre ?? '');
+      final cedula = VenezuelaLocations.normalize(pac?.cedula ?? '');
+      final motivo = VenezuelaLocations.normalize(c.motivo ?? '');
+      final notas = VenezuelaLocations.normalize(c.notasMedicas ?? '');
       return nombre.contains(query) || cedula.contains(query) || motivo.contains(query) || notas.contains(query);
     }).toList();
   }
