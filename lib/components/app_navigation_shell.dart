@@ -138,7 +138,7 @@ class AppNavigationShell extends StatelessWidget {
     );
   }
 
-  Widget _buildLocationSelector(BuildContext context, {bool isMobile = false}) {
+  Widget _buildLocationSelector(BuildContext context, {bool isMobile = false, double? desktopMaxWidth}) {
     final theme = FlutterFlowTheme.of(context);
     return ValueListenableBuilder<String>(
       valueListenable: PatientLocationService.instance.currentLocationNotifier,
@@ -154,7 +154,7 @@ class AppNavigationShell extends StatelessWidget {
               const Icon(Icons.location_on_rounded, size: 15, color: Color(0xFF0284C7)),
               const SizedBox(width: 4),
               ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: isMobile ? 85 : 240),
+                constraints: BoxConstraints(maxWidth: isMobile ? 85 : (desktopMaxWidth ?? 240)),
                 child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.mooli(fontSize: isMobile ? 11.5 : 12.5, fontWeight: FontWeight.w600, color: theme.primaryText)),
               ),
               const SizedBox(width: 4),
@@ -195,7 +195,10 @@ class AppNavigationShell extends StatelessWidget {
                 padding: const EdgeInsets.only(left: 12, right: 4, top: 3, bottom: 3),
                 decoration: BoxDecoration(color: theme.primaryBackground, borderRadius: BorderRadius.circular(24), border: Border.all(color: theme.alternate)),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Text(_formatDoctorHeaderTitle(isEs), style: GoogleFonts.mooli(fontSize: 12.5, fontWeight: FontWeight.bold, color: theme.primaryText)),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 140),
+                    child: Text(_formatDoctorHeaderTitle(isEs), maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.mooli(fontSize: 12.5, fontWeight: FontWeight.bold, color: theme.primaryText)),
+                  ),
                   const SizedBox(width: 8), avatar,
                 ]),
               ) : avatar,
@@ -220,7 +223,9 @@ class AppNavigationShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width >= 768;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth >= 768;
+    final isCompactDesktop = isDesktop && screenWidth < 1180;
     final theme = FlutterFlowTheme.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final desktopItems = (isDesktop && navDefs.length > 1) ? navDefs.sublist(0, navDefs.length - 1) : navDefs;
@@ -236,43 +241,56 @@ class AppNavigationShell extends StatelessWidget {
                 preferredSize: const Size.fromHeight(72),
                 child: Container(
                   decoration: BoxDecoration(color: theme.secondaryBackground, border: Border(bottom: BorderSide(color: theme.alternate, width: 1.5)), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6, offset: const Offset(0, 2))]),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                  padding: EdgeInsets.symmetric(horizontal: isCompactDesktop ? 14 : 24, vertical: 10),
                   child: SafeArea(
                     bottom: false,
                     child: Row(children: [
-                      InkWell(onTap: () => onTap(0), borderRadius: BorderRadius.circular(10), child: _buildBrandLogo(context, size: 36, fontSz: 18, sub: doctorSubtitle)),
-                      if (roleBadge.isNotEmpty) ...[
+                      InkWell(onTap: () => onTap(0), borderRadius: BorderRadius.circular(10), child: _buildBrandLogo(context, size: isCompactDesktop ? 32 : 36, fontSz: isCompactDesktop ? 16 : 18, sub: doctorSubtitle)),
+                      if (roleBadge.isNotEmpty && screenWidth >= 900) ...[
                         const SizedBox(width: 8),
                         Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5), decoration: BoxDecoration(color: const Color(0xFF0284C7).withValues(alpha: isDark ? 0.25 : 0.12), borderRadius: BorderRadius.circular(12)), child: Text(roleBadge, style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF0284C7)))),
                       ],
-                      if (showLocationSelector) ...[const SizedBox(width: 14), _buildLocationSelector(context)],
-                      const Spacer(),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: List.generate(desktopItems.length, (i) {
-                          final it = desktopItems[i]; final isSelected = i == desktopCurIdx;
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: InkWell(
-                              onTap: () => onTap(i), borderRadius: BorderRadius.circular(10),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                decoration: BoxDecoration(color: isSelected ? const Color(0xFF0284C7).withValues(alpha: isDark ? 0.22 : 0.12) : Colors.transparent, borderRadius: BorderRadius.circular(10), border: isSelected ? Border.all(color: const Color(0xFF0284C7).withValues(alpha: 0.4), width: 1.2) : null),
-                                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                                  Icon(it.icon, size: 19, color: isSelected ? const Color(0xFF0284C7) : theme.secondaryText),
-                                  const SizedBox(width: 8),
-                                  Text(it.label, style: TextStyle(fontSize: 13, fontWeight: isSelected ? FontWeight.bold : FontWeight.w600, color: isSelected ? const Color(0xFF0284C7) : theme.primaryText)),
-                                ]),
+                      if (showLocationSelector) ...[
+                        SizedBox(width: isCompactDesktop ? 8 : 14),
+                        _buildLocationSelector(context, isMobile: screenWidth < 960, desktopMaxWidth: isCompactDesktop ? 140 : 240),
+                      ],
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: isCompactDesktop ? 6 : 12),
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: List.generate(desktopItems.length, (i) {
+                                  final it = desktopItems[i]; final isSelected = i == desktopCurIdx;
+                                  return Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: isCompactDesktop ? 2 : 4),
+                                    child: InkWell(
+                                      onTap: () => onTap(i), borderRadius: BorderRadius.circular(10),
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(horizontal: isCompactDesktop ? 9 : 14, vertical: isCompactDesktop ? 7 : 8),
+                                        decoration: BoxDecoration(color: isSelected ? const Color(0xFF0284C7).withValues(alpha: isDark ? 0.22 : 0.12) : Colors.transparent, borderRadius: BorderRadius.circular(10), border: isSelected ? Border.all(color: const Color(0xFF0284C7).withValues(alpha: 0.4), width: 1.2) : null),
+                                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                                          Icon(it.icon, size: isCompactDesktop ? 17 : 19, color: isSelected ? const Color(0xFF0284C7) : theme.secondaryText),
+                                          SizedBox(width: isCompactDesktop ? 5 : 8),
+                                          Text(it.label, style: TextStyle(fontSize: isCompactDesktop ? 12 : 13, fontWeight: isSelected ? FontWeight.bold : FontWeight.w600, color: isSelected ? const Color(0xFF0284C7) : theme.primaryText)),
+                                        ]),
+                                      ),
+                                    ),
+                                  );
+                                }),
                               ),
                             ),
-                          );
-                        }),
+                          ),
+                        ),
                       ),
                       if (actions != null) ...actions!,
-                      const SizedBox(width: 8), _buildThemeToggle(context),
-                      const SizedBox(width: 8), _buildLanguageSwitcher(context),
-                      const SizedBox(width: 8), _buildNotificationBell(context),
-                      const SizedBox(width: 10), _buildUserAvatar(context, showDoctorName: true),
+                      SizedBox(width: isCompactDesktop ? 6 : 8), _buildThemeToggle(context),
+                      SizedBox(width: isCompactDesktop ? 6 : 8), _buildLanguageSwitcher(context),
+                      SizedBox(width: isCompactDesktop ? 6 : 8), _buildNotificationBell(context),
+                      SizedBox(width: isCompactDesktop ? 6 : 10), _buildUserAvatar(context, showDoctorName: screenWidth >= 1060),
                     ]),
                   ),
                 ),
