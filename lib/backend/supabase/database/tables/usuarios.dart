@@ -71,4 +71,7 @@ class UsuariosRow extends SupabaseDataRow {
   double? get montoExoneracion => getField<double>('monto_exoneracion');
   set montoExoneracion(double? value) =>
       setField<double>('monto_exoneracion', value);
+
+  String? get genero => getField<String>('genero');
+  set genero(String? value) => setField<String>('genero', value);
 }
