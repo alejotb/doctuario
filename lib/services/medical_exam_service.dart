@@ -7,7 +7,70 @@ class MedicalExamService {
   MedicalExamService._internal();
 
   static const String bucketName = 'examenes';
-  static const int maxFileSizeBytes = 3 * 1024 * 1024; // 3 MB límite por archivo
+  static const int maxFileSizeBytes = 25 * 1024 * 1024; // 25 MB límite por archivo
+
+  /// Resuelve el Content-Type (MIME) exacto según la extensión del archivo
+  /// para que el navegador web pueda abrir PDFs e imágenes de forma nativa.
+  static String resolveContentType(String ext) {
+    switch (ext.toLowerCase()) {
+      case 'pdf':
+        return 'application/pdf';
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'webp':
+        return 'image/webp';
+      case 'gif':
+        return 'image/gif';
+      case 'heic':
+      case 'heif':
+        return 'image/heic';
+      case 'bmp':
+        return 'image/bmp';
+      case 'svg':
+        return 'image/svg+xml';
+      case 'dcm':
+      case 'dicom':
+        return 'application/dicom';
+      case 'zip':
+        return 'application/zip';
+      case 'rar':
+        return 'application/vnd.rar';
+      case '7z':
+        return 'application/x-7z-compressed';
+      case 'xml':
+        return 'application/xml';
+      case 'csv':
+        return 'text/csv';
+      case 'txt':
+        return 'text/plain; charset=utf-8';
+      case 'doc':
+        return 'application/msword';
+      case 'docx':
+        return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      default:
+        return 'application/octet-stream';
+    }
+  }
+
+  /// Clasifica el formato del estudio según su extensión
+  static String resolveFormato(String ext) {
+    final e = ext.toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'gif', 'bmp'].contains(e)) {
+      return 'imagen';
+    } else if (e == 'pdf') {
+      return 'pdf';
+    } else if (['dcm', 'dicom'].contains(e)) {
+      return 'dicom';
+    } else if (['ecg', 'ekg', 'scp', 'edf', 'bdf', 'hl7', 'dat', 'xml'].contains(e)) {
+      return 'electro_datos';
+    } else if (['zip', 'rar', '7z', 'tar', 'gz'].contains(e)) {
+      return 'comprimido';
+    }
+    return 'documento';
+  }
 
   /// Catálogo de tipos de estudios clínicos y sus estudios más frecuentes
   static const Map<String, List<String>> catalogoEstudiosPorTipo = {
@@ -96,7 +159,7 @@ class MedicalExamService {
   }) async {
     if (fileBytes.lengthInBytes > maxFileSizeBytes) {
       throw Exception(
-        'El archivo supera el límite recomendado de 3 MB para optimización de almacenamiento.',
+        'El archivo supera el límite máximo permitido de 25 MB.',
       );
     }
 
@@ -104,12 +167,16 @@ class MedicalExamService {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final cleanFileName = fileName.replaceAll(RegExp(r'[^a-zA-Z0-9._-]'), '_');
     final storagePath = 'pacientes/$idPaciente/${timestamp}_$cleanFileName';
+    final mimeType = resolveContentType(ext);
 
-    // Subida al bucket en Supabase Storage
+    // Subida al bucket en Supabase Storage con el Content-Type correcto
     await SupaFlow.client.storage.from(bucketName).uploadBinary(
           storagePath,
           fileBytes,
-          fileOptions: const FileOptions(upsert: true),
+          fileOptions: FileOptions(
+            upsert: true,
+            contentType: mimeType,
+          ),
         );
 
     final publicUrl =
@@ -132,16 +199,7 @@ class MedicalExamService {
       } catch (_) {}
     }
 
-    String formatoFinal = 'documento';
-    if (['jpg', 'jpeg', 'png', 'webp', 'heic', 'gif'].contains(ext)) {
-      formatoFinal = 'imagen';
-    } else if (ext == 'pdf') {
-      formatoFinal = 'pdf';
-    } else if (['dcm', 'dicom'].contains(ext)) {
-      formatoFinal = 'dicom';
-    } else if (['zip', 'rar', '7z'].contains(ext)) {
-      formatoFinal = 'comprimido';
-    }
+    final String formatoFinal = resolveFormato(ext);
 
     // Registro en la base de datos con estado inicial 'por_revisar' por defecto
     final nuevoExamen = await ExamenesMedicosTable().insert({

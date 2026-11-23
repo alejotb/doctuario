@@ -124,7 +124,7 @@ class _PatientLatestExamsQuickCardState extends State<PatientLatestExamsQuickCar
     }
 
     try {
-      final res = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg', 'webp', 'heic'], withData: true);
+      final res = await FilePicker.platform.pickFiles(type: FileType.any, withData: true);
       if (res == null || res.files.isEmpty || res.files.first.bytes == null) return;
       final file = res.files.first;
 

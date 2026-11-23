@@ -411,13 +411,13 @@ USING (EXISTS (SELECT 1 FROM public.usuarios u WHERE u.id = auth.uid() AND u.rol
 -- 5. BUCKETS DE STORAGE Y POLÍTICAS DE OBJETOS
 -- ------------------------------------------------------------------------------
 
-INSERT INTO storage.buckets (id, name, public, file_size_limit)
-VALUES ('examenes', 'examenes', false, 15728640)
-ON CONFLICT (id) DO UPDATE SET public = false;
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('examenes', 'examenes', false, 26214400, NULL)
+ON CONFLICT (id) DO UPDATE SET public = false, file_size_limit = 26214400, allowed_mime_types = NULL;
 
-INSERT INTO storage.buckets (id, name, public, file_size_limit)
-VALUES ('documentos_medicos', 'documentos_medicos', false, 15728640)
-ON CONFLICT (id) DO UPDATE SET public = false;
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('documentos_medicos', 'documentos_medicos', false, 26214400, NULL)
+ON CONFLICT (id) DO UPDATE SET public = false, file_size_limit = 26214400, allowed_mime_types = NULL;
 
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('perfiles', 'perfiles', true)

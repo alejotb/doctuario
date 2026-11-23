@@ -7,6 +7,7 @@ import '../flutter_flow/flutter_flow_theme.dart';
 import '../services/doctor_subscription_service.dart';
 import '../services/medical_exam_service.dart';
 import '../services/venezuela_locations.dart';
+import '../doctors/components/medical_exam_viewer_dialog.dart';
 
 class PatientExamsWidget extends StatefulWidget {
   final String idPaciente;
@@ -344,9 +345,28 @@ class _PatientExamsWidgetState extends State<PatientExamsWidget> {
                         itemCount: _examenesFiltrados.length,
                         itemBuilder: (context, index) {
                           final ex = _examenesFiltrados[index];
-                          final esPdf = ex.formato == 'pdf' ||
-                              (ex.archivoUrl?.toLowerCase().endsWith('.pdf') ??
+                          final fmt = (ex.formato ?? '').toLowerCase();
+                          final esPdf = fmt == 'pdf' ||
+                              (ex.archivoUrl?.toLowerCase().contains('.pdf') ??
                                   false);
+                          final esImagen = fmt == 'imagen';
+
+                          IconData leadingIcon = Icons.insert_drive_file_rounded;
+                          Color leadingBg = Colors.teal.shade50;
+                          Color leadingFg = Colors.teal;
+                          if (esPdf) {
+                            leadingIcon = Icons.picture_as_pdf_rounded;
+                            leadingBg = Colors.red.shade100;
+                            leadingFg = Colors.red;
+                          } else if (esImagen) {
+                            leadingIcon = Icons.image_rounded;
+                            leadingBg = Colors.blue.shade100;
+                            leadingFg = Colors.blue;
+                          } else if (fmt == 'dicom' || fmt == 'electro_datos') {
+                            leadingIcon = Icons.monitor_heart_rounded;
+                            leadingBg = Colors.purple.shade100;
+                            leadingFg = Colors.purple;
+                          }
 
                     return Card(
                       elevation: 2,
@@ -356,11 +376,10 @@ class _PatientExamsWidgetState extends State<PatientExamsWidget> {
                       ),
                       child: ListTile(
                         leading: CircleAvatar(
-                          backgroundColor:
-                              esPdf ? Colors.red.shade100 : Colors.blue.shade100,
+                          backgroundColor: leadingBg,
                           child: Icon(
-                            esPdf ? Icons.picture_as_pdf : Icons.image,
-                            color: esPdf ? Colors.red : Colors.blue,
+                            leadingIcon,
+                            color: leadingFg,
                           ),
                         ),
                         title: Text(
@@ -414,7 +433,26 @@ class _PatientExamsWidgetState extends State<PatientExamsWidget> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              tooltip: 'Ver / Descargar PDF',
+                              tooltip: 'Ver e Imprimir en la Aplicación',
+                              icon: const Icon(Icons.visibility_rounded,
+                                  color: Color(0xFF0284C7)),
+                              onPressed: () {
+                                MedicalExamViewerDialog.show(
+                                  context,
+                                  examen: ex,
+                                  paciente: widget.nombrePaciente != null
+                                      ? UsuariosRow({
+                                          'id': widget.idPaciente,
+                                          'nombre': widget.nombrePaciente,
+                                        })
+                                      : null,
+                                  onActualizado: _cargarExamenes,
+                                  puedeMarcarRevisado: widget.puedeSubir,
+                                );
+                              },
+                            ),
+                            IconButton(
+                              tooltip: 'Descargar Archivo Original',
                               icon: const Icon(Icons.download_rounded,
                                   color: Colors.teal),
                               onPressed: () {
@@ -426,9 +464,18 @@ class _PatientExamsWidgetState extends State<PatientExamsWidget> {
                           ],
                         ),
                         onTap: () {
-                          if (ex.archivoUrl != null) {
-                            _abrirDescargarExamen(ex.archivoUrl!);
-                          }
+                          MedicalExamViewerDialog.show(
+                            context,
+                            examen: ex,
+                            paciente: widget.nombrePaciente != null
+                                ? UsuariosRow({
+                                    'id': widget.idPaciente,
+                                    'nombre': widget.nombrePaciente,
+                                  })
+                                : null,
+                            onActualizado: _cargarExamenes,
+                            puedeMarcarRevisado: widget.puedeSubir,
+                          );
                         },
                       ),
                     );

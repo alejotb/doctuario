@@ -119,8 +119,7 @@ class _UploadPatientStudyDialogState extends State<UploadPatientStudyDialog> {
 
   Future<void> _seleccionarArchivo() async {
     final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg', 'webp'],
+      type: FileType.any,
       withData: true,
     );
 
@@ -135,7 +134,7 @@ class _UploadPatientStudyDialogState extends State<UploadPatientStudyDialog> {
       return;
     }
     if (_archivoSeleccionado == null || _archivoSeleccionado!.bytes == null) {
-      _mostrarAlerta('Debes adjuntar un archivo (PDF o Imagen).');
+      _mostrarAlerta('Debes adjuntar el archivo del estudio (PDF, Imagen o formato médico).');
       return;
     }
 
