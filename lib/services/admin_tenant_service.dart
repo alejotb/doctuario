@@ -411,6 +411,9 @@ class AdminTenantService {
         }
       } catch (e) {
         debugPrint('AdminTenantService: Update en doctores falló, intentando upsert: $e');
+      }
+
+      if (!docUpdatedOk) {
         try {
           final upsRes = await client.from('doctores').upsert({
             'id': idDoctor,
@@ -426,7 +429,8 @@ class AdminTenantService {
       }
 
       if (!docUpdatedOk) {
-        debugPrint('AdminTenantService: AVISO: La tabla doctores no registró el cambio (posible bloqueo RLS en Supabase).');
+        debugPrint('AdminTenantService: ERROR: La tabla doctores no registró el cambio (posible bloqueo RLS o fila inexistente en Supabase).');
+        return false;
       }
 
       // Asegurar rol doctor en usuarios
