@@ -46,18 +46,18 @@ class DoctorPendingRequest {
   });
 
   /// Determina si el doctor ya cuenta con su consultorio o cuenta aprobada y activa.
-  bool get isAprobado =>
-      estaAprobado ||
-      tenantActivo ||
-      estado.toLowerCase() == 'aprobado' ||
-      estado.toLowerCase() == 'activo';
+  bool get isAprobado => estaAprobado;
 
   factory DoctorPendingRequest.fromMap(Map<String, dynamic> map) {
-    final bool estaAprobado = map['esta_aprobado'] == true || map['activo'] == true;
-    final bool tenantActivo = map['tenant_activo'] == true;
-    final String estadoVerif = map['estado_verificacion']?.toString() ??
+    final bool? estaAprobadoRaw = map['esta_aprobado'] as bool?;
+    final String rawEstado = (map['estado_verificacion']?.toString() ??
         map['estado']?.toString() ??
-        (estaAprobado ? 'aprobado' : 'pendiente');
+        '').toLowerCase().trim();
+    final bool tenantActivo = map['tenant_activo'] == true || map['activo'] == true;
+    final bool estaAprobado = estaAprobadoRaw ?? (rawEstado == 'aprobado' || rawEstado == 'activo');
+    final String estadoVerif = rawEstado.isNotEmpty
+        ? rawEstado
+        : (estaAprobado ? 'aprobado' : 'pendiente');
     final String rawPlan = map['plan']?.toString().toLowerCase().trim() ?? 'individual';
     final double precio = double.tryParse(map['precio_mensual']?.toString() ?? '') ??
         (rawPlan == 'individual'
@@ -247,15 +247,18 @@ class AdminTenantService {
         final tenant = tenantsMap[idDoc];
 
         final rawEstado = (doc?['estado_verificacion']?.toString() ?? '').toLowerCase().trim();
-        final bool estaAprobadoCol = doc?['esta_aprobado'] == true;
-        final bool activoCol = doc?['activo'] == true;
+        final bool? estaAprobadoRaw = doc?['esta_aprobado'] as bool?;
         final bool tenantActivo = tenant?['activo'] == true;
 
-        final bool isApproved = estaAprobadoCol ||
-            activoCol ||
-            tenantActivo ||
-            rawEstado == 'aprobado' ||
-            rawEstado == 'activo';
+        // La columna 'esta_aprobado' en doctores es la fuente de verdad primaria.
+        final bool isApproved;
+        if (estaAprobadoRaw != null) {
+          isApproved = estaAprobadoRaw;
+        } else if (rawEstado.isNotEmpty) {
+          isApproved = (rawEstado == 'aprobado' || rawEstado == 'activo');
+        } else {
+          isApproved = false;
+        }
 
         // Si el filtro solo pide pendientes y el doctor ya está activo/aprobado, excluirlo
         if (soloPendientes && isApproved) {
@@ -397,14 +400,33 @@ class AdminTenantService {
       }
 
       // Marcar doctor como aprobado o pendiente en la tabla doctores
+      bool docUpdatedOk = false;
       try {
-        await client.from('doctores').upsert({
-          'id': idDoctor,
+        final updRes = await client.from('doctores').update({
           'estado_verificacion': activo ? 'aprobado' : 'pendiente',
           'esta_aprobado': activo,
-        });
+        }).eq('id', idDoctor).select('id, esta_aprobado');
+        if ((updRes as List).isNotEmpty) {
+          docUpdatedOk = true;
+        }
       } catch (e) {
-        debugPrint('AdminTenantService: Aviso actualizando tabla doctores central: $e');
+        debugPrint('AdminTenantService: Update en doctores falló, intentando upsert: $e');
+        try {
+          final upsRes = await client.from('doctores').upsert({
+            'id': idDoctor,
+            'estado_verificacion': activo ? 'aprobado' : 'pendiente',
+            'esta_aprobado': activo,
+          }).select('id, esta_aprobado');
+          if ((upsRes as List).isNotEmpty) {
+            docUpdatedOk = true;
+          }
+        } catch (e2) {
+          debugPrint('AdminTenantService: Error crítico actualizando tabla doctores central: $e2');
+        }
+      }
+
+      if (!docUpdatedOk) {
+        debugPrint('AdminTenantService: AVISO: La tabla doctores no registró el cambio (posible bloqueo RLS en Supabase).');
       }
 
       // Asegurar rol doctor en usuarios

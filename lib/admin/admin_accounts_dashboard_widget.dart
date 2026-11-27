@@ -340,12 +340,12 @@ class _AdminAccountsDashboardWidgetState extends State<AdminAccountsDashboardWid
                     email: account.email,
                     telefono: account.telefono,
                     especialidad: account.especialidad ?? (isEs ? 'Medicina General' : 'General Practice'),
-                    estado: account.tenantActivo == true ? 'aprobado' : 'pendiente',
+                    estado: account.estaAprobado ? 'aprobado' : (account.estadoVerificacion ?? 'pendiente'),
                     createdAt: account.createdAt,
                     dbUrl: account.tenantDbUrl,
                     dbAnonKey: account.tenantDbAnonKey,
-                    estaAprobado: account.tenantActivo == true,
-                    tenantActivo: account.tenantActivo == true,
+                    estaAprobado: account.estaAprobado,
+                    tenantActivo: account.tenantActivo ?? account.estaAprobado,
                   ),
                   onUpdated: _cargarDatos,
                 ),
@@ -354,12 +354,12 @@ class _AdminAccountsDashboardWidgetState extends State<AdminAccountsDashboardWid
                   child: Text(
                     account.esSoloLectura
                         ? (isEs ? 'Solo Lectura (Pago Pendiente)' : 'Read-Only (Pending)')
-                        : (account.tenantActivo == true ? (isEs ? 'Activo' : 'Active') : (isEs ? 'Pendiente' : 'Pending')),
+                        : (account.estaAprobado ? (isEs ? 'Activo' : 'Active') : (isEs ? 'Pendiente' : 'Pending')),
                     style: GoogleFonts.mooli(
                       fontSize: 11.0,
-                      color: account.esSoloLectura ? Colors.orange.shade800 : (account.tenantActivo == true ? Colors.green : Colors.orange),
+                      color: account.esSoloLectura ? Colors.orange.shade800 : (account.estaAprobado ? Colors.green : Colors.orange),
                       fontWeight: FontWeight.bold,
-                      decoration: account.tenantActivo == true ? TextDecoration.none : TextDecoration.underline,
+                      decoration: account.estaAprobado ? TextDecoration.none : TextDecoration.underline,
                     ),
                   ),
                 ),

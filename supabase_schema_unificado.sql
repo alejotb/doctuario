@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS public.centros_medicos (
 );
 
 -- ------------------------------------------------------------------------------
--- 2. TRIGGER ANTI-ESCALAMIENTO DE PRIVILEGIOS (SEGURIDAD CRÍTICA)
+-- 2. TRIGGER ANTI-ESCALAMIENTO DE PRIVILEGIOS Y FUNCIÓN HELPER ES_ADMIN
 -- ------------------------------------------------------------------------------
 -- Impide que cualquier usuario se auto-asigne el rol de 'admin' o 'administrador'.
 -- Solo tú desde el SQL Editor o Dashboard de Supabase puedes otorgar rol de administrador.
@@ -98,6 +98,19 @@ CREATE TRIGGER tr_proteger_rol_usuario
 BEFORE INSERT OR UPDATE ON public.usuarios
 FOR EACH ROW
 EXECUTE FUNCTION public.proteger_rol_usuario();
+
+-- Función SECURITY DEFINER para verificar si el usuario autenticado es Administrador (evita recursión)
+CREATE OR REPLACE FUNCTION public.es_admin(p_uid uuid)
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.usuarios u
+    WHERE u.id = p_uid AND u.rol IN ('admin', 'administrador')
+  );
+$$;
 
 
 -- ------------------------------------------------------------------------------
@@ -172,13 +185,16 @@ CREATE POLICY "Lectura publica de usuarios"
 ON public.usuarios FOR SELECT USING (true);
 
 CREATE POLICY "Usuarios insertan su propio perfil" 
-ON public.usuarios FOR INSERT WITH CHECK (auth.uid() = id);
+ON public.usuarios FOR INSERT WITH CHECK (auth.uid() = id OR public.es_admin(auth.uid()));
 
 CREATE POLICY "Usuarios editan su propio perfil" 
-ON public.usuarios FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+ON public.usuarios FOR UPDATE USING (auth.uid() = id OR public.es_admin(auth.uid())) WITH CHECK (auth.uid() = id OR public.es_admin(auth.uid()));
 
 -- B. DOCTORES
 ALTER TABLE public.doctores ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.doctores ALTER COLUMN esta_aprobado SET DEFAULT FALSE;
+ALTER TABLE public.doctores ALTER COLUMN estado_verificacion SET DEFAULT 'pendiente';
+
 DROP POLICY IF EXISTS "Directorio de doctores visible" ON public.doctores;
 DROP POLICY IF EXISTS "Doctor inserta su registro" ON public.doctores;
 DROP POLICY IF EXISTS "Doctor edita su registro" ON public.doctores;
@@ -187,10 +203,10 @@ CREATE POLICY "Directorio de doctores visible"
 ON public.doctores FOR SELECT USING (true);
 
 CREATE POLICY "Doctor inserta su registro" 
-ON public.doctores FOR INSERT WITH CHECK (auth.uid() = id);
+ON public.doctores FOR INSERT WITH CHECK (auth.uid() = id OR public.es_admin(auth.uid()));
 
 CREATE POLICY "Doctor edita su registro" 
-ON public.doctores FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+ON public.doctores FOR UPDATE USING (auth.uid() = id OR public.es_admin(auth.uid())) WITH CHECK (auth.uid() = id OR public.es_admin(auth.uid()));
 
 -- C. SECRETARIA_DOCTORES
 ALTER TABLE public.secretaria_doctores ENABLE ROW LEVEL SECURITY;
@@ -391,10 +407,10 @@ ALTER TABLE public.doctores_tenants ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Lectura de suscripciones del doctor" ON public.doctores_tenants;
 DROP POLICY IF EXISTS "Gestion de suscripciones por el doctor" ON public.doctores_tenants;
 CREATE POLICY "Lectura de suscripciones del doctor" ON public.doctores_tenants FOR SELECT TO authenticated
-USING (auth.uid() = id_doctor OR auth.uid() = id_doctor_administrador);
+USING (auth.uid() = id_doctor OR auth.uid() = id_doctor_administrador OR public.es_admin(auth.uid()));
 CREATE POLICY "Gestion de suscripciones por el doctor" ON public.doctores_tenants FOR ALL TO authenticated
-USING (auth.uid() = id_doctor OR auth.uid() = id_doctor_administrador)
-WITH CHECK (auth.uid() = id_doctor OR auth.uid() = id_doctor_administrador);
+USING (auth.uid() = id_doctor OR auth.uid() = id_doctor_administrador OR public.es_admin(auth.uid()))
+WITH CHECK (auth.uid() = id_doctor OR auth.uid() = id_doctor_administrador OR public.es_admin(auth.uid()));
 
 -- O. SOPORTE_TICKETS
 ALTER TABLE public.soporte_tickets ENABLE ROW LEVEL SECURITY;

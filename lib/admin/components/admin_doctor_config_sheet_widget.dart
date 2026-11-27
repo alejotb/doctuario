@@ -67,10 +67,31 @@ class _AdminDoctorConfigSheetWidgetState extends State<AdminDoctorConfigSheetWid
     _selectedPlan = widget.doc.plan;
     _selectedEstadoPago = widget.doc.estadoPago;
     _modoSoloLectura = widget.doc.modoSoloLectura;
-    _estaAprobado = widget.doc.isAprobado;
+    _estaAprobado = widget.doc.estaAprobado;
     _precioController = TextEditingController(
       text: widget.doc.precioMensual.toStringAsFixed(0),
     );
+    _cargarEstadoRealDirecto();
+  }
+
+  Future<void> _cargarEstadoRealDirecto() async {
+    try {
+      final docRes = await SupaFlow.client
+          .from('doctores')
+          .select('esta_aprobado, estado_verificacion')
+          .eq('id', widget.doc.idDoctor)
+          .maybeSingle();
+      if (docRes != null && mounted) {
+        final bool? realAprobado = docRes['esta_aprobado'] as bool?;
+        if (realAprobado != null && realAprobado != _estaAprobado) {
+          setState(() {
+            _estaAprobado = realAprobado;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('AdminDoctorConfigSheet: Error consultando estado real directo: $e');
+    }
   }
 
   @override

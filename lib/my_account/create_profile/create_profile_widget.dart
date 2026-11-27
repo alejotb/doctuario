@@ -282,10 +282,14 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
 
       if (selectedRole == 'doctor') {
         try {
+          final existingDoc = await DoctoresTable().querySingleRow(queryFn: (q) => q.eq('id', userId));
+          final bool yaAprobado = existingDoc.isNotEmpty && existingDoc.first.estaAprobado == true;
           await DualDatabaseConfig.instance.patientClient.from('doctores').upsert({
             'id': userId,
             'especialidad': especialidadFinal,
             if (bioText.isNotEmpty) 'biografia': bioText,
+            if (!yaAprobado && !widget.esEdicion) 'esta_aprobado': false,
+            if (!yaAprobado && !widget.esEdicion) 'estado_verificacion': 'pendiente',
           });
         } catch (_) {}
         try {

@@ -13,6 +13,7 @@ class AdminAccountItem {
   final String? cedula;
   final String? especialidad;
   final String? estadoVerificacion;
+  final bool estaAprobado;
   final bool? tenantActivo;
   final String? tenantDbUrl;
   final String? tenantDbAnonKey;
@@ -30,6 +31,7 @@ class AdminAccountItem {
     this.cedula,
     this.especialidad,
     this.estadoVerificacion,
+    this.estaAprobado = false,
     this.tenantActivo,
     this.tenantDbUrl,
     this.tenantDbAnonKey,
@@ -99,7 +101,7 @@ class AdminAccountsService {
       final client = _dualConfig.patientClient;
 
       final usersRes = await client.from('usuarios').select('id, rol');
-      final docsRes = await client.from('doctores').select('id, estado_verificacion');
+      final docsRes = await client.from('doctores').select('id, esta_aprobado, estado_verificacion');
       final tenantsRes = await client.from('doctores_tenants').select('id_doctor, activo');
 
       List centrosList = [];
@@ -138,22 +140,16 @@ class AdminAccountsService {
         if (id.isNotEmpty) {
           doctorUserIds.add(id);
           final rawSt = (d['estado_verificacion']?.toString() ?? '').toLowerCase().trim();
-          final bool isAprobado = d['esta_aprobado'] == true ||
-              d['activo'] == true ||
-              rawSt == 'aprobado' ||
-              rawSt == 'activo';
+          final bool? estaAprobadoRaw = d['esta_aprobado'] as bool?;
+          final bool isAprobado = estaAprobadoRaw ?? (rawSt == 'aprobado' || rawSt == 'activo');
           docStatusMap[id] = isAprobado ? 'aprobado' : (rawSt.isNotEmpty ? rawSt : 'pendiente');
         }
       }
 
       int tenantsActivos = 0;
       for (final t in tenantsList) {
-        final idDoc = t['id_doctor']?.toString() ?? '';
         if (t['activo'] == true) {
           tenantsActivos++;
-          if (idDoc.isNotEmpty) {
-            docStatusMap[idDoc] = 'aprobado';
-          }
         }
       }
 
@@ -223,18 +219,16 @@ class AdminAccountsService {
         final doc = docsMap[id];
         final tenant = tenantsMap[id];
 
-        final estadoVerif = doc?['estado_verificacion']?.toString();
+        final String? rawEstadoVerif = doc?['estado_verificacion']?.toString();
+        final bool? estaAprobadoRaw = doc?['esta_aprobado'] as bool?;
         final isTenantActive = tenant?['activo'] as bool?;
         final estadoPago = tenant?['estado_pago']?.toString() ?? 'al_dia';
 
-        final bool isDocApproved = doc?['esta_aprobado'] == true ||
-            doc?['activo'] == true ||
-            isTenantActive == true ||
-            (estadoVerif?.toLowerCase() == 'aprobado') ||
-            (estadoVerif?.toLowerCase() == 'activo');
+        final bool isDocApproved = estaAprobadoRaw ??
+            ((rawEstadoVerif?.toLowerCase() == 'aprobado') || (rawEstadoVerif?.toLowerCase() == 'activo'));
 
         final estaSuspendido = rol.toLowerCase() == 'suspendido' ||
-            estadoVerif?.toLowerCase() == 'suspendido' ||
+            rawEstadoVerif?.toLowerCase() == 'suspendido' ||
             (tenant != null && isTenantActive == false);
 
         cuentas.add(AdminAccountItem(
@@ -247,8 +241,9 @@ class AdminAccountsService {
           createdAt: DateTime.tryParse(u['created_at']?.toString() ?? '') ?? DateTime.now(),
           cedula: u['cedula']?.toString(),
           especialidad: doc?['especialidad']?.toString(),
-          estadoVerificacion: isDocApproved ? 'aprobado' : estadoVerif,
-          tenantActivo: isTenantActive ?? (isDocApproved ? true : null),
+          estadoVerificacion: isDocApproved ? 'aprobado' : (rawEstadoVerif ?? 'pendiente'),
+          estaAprobado: isDocApproved,
+          tenantActivo: isTenantActive ?? isDocApproved,
           tenantDbUrl: null,
           tenantDbAnonKey: null,
           estadoPago: estadoPago,

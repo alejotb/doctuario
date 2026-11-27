@@ -344,7 +344,8 @@ class DoctorsService {
           if (onlyApproved) {
             final st = (d['estado_verificacion']?.toString() ?? '').toLowerCase().trim();
             final isSuspended = u?['suspendido'] == true || st == 'suspendido';
-            final isApproved = d['esta_aprobado'] == true || st == 'aprobado' || st == 'activo';
+            final bool? estaAprobadoCol = d['esta_aprobado'] as bool?;
+            final bool isApproved = estaAprobadoCol ?? (st == 'aprobado' || st == 'activo');
             if (isSuspended || !isApproved) continue;
           }
           if (onlyCatalogVisible && d['visible_en_catalogo'] == false) {
