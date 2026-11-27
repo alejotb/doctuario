@@ -202,7 +202,7 @@ class MedicalExamService {
     final String formatoFinal = resolveFormato(ext);
 
     // Registro en la base de datos con estado inicial 'por_revisar' por defecto
-    final nuevoExamen = await ExamenesMedicosTable().insert({
+    final insertData = <String, dynamic>{
       'id_paciente': idPaciente,
       'id_doctor': idDoctor,
       if (idCita != null) 'id_cita': idCita,
@@ -221,9 +221,22 @@ class MedicalExamService {
       'compartir_con_paciente': compartirConPaciente,
       if (correoFamiliar != null && correoFamiliar.trim().isNotEmpty)
         'correo_familiar': correoFamiliar.trim().toLowerCase(),
-    });
+    };
 
-    return nuevoExamen;
+    try {
+      return await ExamenesMedicosTable().insert(insertData);
+    } catch (e) {
+      final errStr = e.toString();
+      if (errStr.contains('PGRST204') ||
+          errStr.contains('compartir_con_paciente') ||
+          errStr.contains('correo_familiar')) {
+        final fallbackData = Map<String, dynamic>.from(insertData)
+          ..remove('compartir_con_paciente')
+          ..remove('correo_familiar');
+        return await ExamenesMedicosTable().insert(fallbackData);
+      }
+      rethrow;
+    }
   }
 
   /// Marca un estudio como revisado directamente por el doctor
@@ -266,10 +279,27 @@ class MedicalExamService {
     if (correoFamiliar != null) {
       updateData['correo_familiar'] = correoFamiliar.trim().isEmpty ? null : correoFamiliar.trim().toLowerCase();
     }
-    await ExamenesMedicosTable().update(
-      data: updateData,
-      matchingRows: (q) => q.eq('id', idExamen),
-    );
+    try {
+      await ExamenesMedicosTable().update(
+        data: updateData,
+        matchingRows: (q) => q.eq('id', idExamen),
+      );
+    } catch (e) {
+      final errStr = e.toString();
+      if (errStr.contains('PGRST204') ||
+          errStr.contains('compartir_con_paciente') ||
+          errStr.contains('correo_familiar')) {
+        final fallbackData = Map<String, dynamic>.from(updateData)
+          ..remove('compartir_con_paciente')
+          ..remove('correo_familiar');
+        await ExamenesMedicosTable().update(
+          data: fallbackData,
+          matchingRows: (q) => q.eq('id', idExamen),
+        );
+      } else {
+        rethrow;
+      }
+    }
   }
 
   /// Obtiene la lista de exámenes de un paciente con soporte de visibilidad y acceso para familiares

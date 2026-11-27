@@ -216,6 +216,8 @@ ALTER TABLE examenes_medicos ADD COLUMN IF NOT EXISTS fecha_entrega DATE;
 ALTER TABLE examenes_medicos ADD COLUMN IF NOT EXISTS especialidad TEXT;
 ALTER TABLE examenes_medicos ADD COLUMN IF NOT EXISTS estado TEXT DEFAULT 'por_revisar';
 ALTER TABLE examenes_medicos ADD COLUMN IF NOT EXISTS hallazgos TEXT;
+ALTER TABLE examenes_medicos ADD COLUMN IF NOT EXISTS compartir_con_paciente BOOLEAN DEFAULT TRUE;
+ALTER TABLE examenes_medicos ADD COLUMN IF NOT EXISTS correo_familiar TEXT;
 
 ALTER TABLE citas ADD COLUMN IF NOT EXISTS borrador_consulta JSONB;
 ALTER TABLE citas ADD COLUMN IF NOT EXISTS es_borrador BOOLEAN DEFAULT FALSE;

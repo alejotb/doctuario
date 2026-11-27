@@ -91,9 +91,26 @@ class _AppointmentStudiesProceduresModalState
 
   Future<void> _cargarEstudiosDelDoctor() async {
     final activos = await DoctorStudiesService.instance.obtenerEstudiosActivos(widget.idDoctor);
+    final yaRegistrados = await MedicalExamService().obtenerExamenesPorCita(widget.cita.id);
     if (mounted) {
       setState(() {
         _estudiosDisponibles = activos;
+        for (final ex in yaRegistrados) {
+          final tituloEx = (ex.titulo ?? ex.tipoExamen ?? '').trim();
+          if (tituloEx.isEmpty) continue;
+          final yaEnLista = _seleccionados.any(
+            (item) => item.titulo.toLowerCase() == tituloEx.toLowerCase(),
+          );
+          if (!yaEnLista) {
+            final matchConfig = activos.where((c) => c.titulo.toLowerCase() == tituloEx.toLowerCase()).toList();
+            _seleccionados.add(ProcedimientoEstudioItem(
+              titulo: matchConfig.isNotEmpty ? matchConfig.first.titulo : tituloEx,
+              categoria: matchConfig.isNotEmpty ? matchConfig.first.categoria : (ex.tipoExamen ?? 'Estudio Médico'),
+              duracionMinutos: matchConfig.isNotEmpty ? matchConfig.first.duracionMinutos : 0,
+              subido: true,
+            ));
+          }
+        }
         _cargandoEstudios = false;
       });
     }
@@ -173,27 +190,49 @@ class _AppointmentStudiesProceduresModalState
                   final String titulo = p.titulo;
                   final int minutos = p.duracionMinutos;
                   final IconData icono = p.icono ?? Icons.biotech_rounded;
-                  final bool estaSeleccionado = _seleccionados.any((item) => item.titulo == titulo);
+                  final existente = _seleccionados.where((item) => item.titulo.toLowerCase() == titulo.toLowerCase()).toList();
+                  final bool estaSeleccionado = existente.isNotEmpty;
+                  final bool yaSubido = estaSeleccionado && existente.first.subido;
 
                   return FilterChip(
-                    avatar: Icon(icono, size: 16, color: estaSeleccionado ? Colors.white : const Color(0xFF0284C7)),
-                    label: Text('$titulo (+$minutos min)'),
-                    labelStyle: TextStyle(fontSize: 12, fontWeight: estaSeleccionado ? FontWeight.bold : FontWeight.normal, color: estaSeleccionado ? Colors.white : const Color(0xFF0F172A)),
+                    avatar: Icon(
+                      yaSubido ? Icons.task_alt_rounded : icono,
+                      size: 16,
+                      color: yaSubido
+                          ? const Color(0xFF15803D)
+                          : (estaSeleccionado ? Colors.white : const Color(0xFF0284C7)),
+                    ),
+                    label: Text(
+                      yaSubido ? '$titulo (Ya agregado)' : '$titulo (+$minutos min)',
+                    ),
+                    labelStyle: TextStyle(
+                      fontSize: 12,
+                      fontWeight: estaSeleccionado ? FontWeight.bold : FontWeight.normal,
+                      color: yaSubido
+                          ? const Color(0xFF15803D)
+                          : (estaSeleccionado ? Colors.white : const Color(0xFF0F172A)),
+                    ),
                     selected: estaSeleccionado,
-                    selectedColor: const Color(0xFF0284C7),
+                    selectedColor: yaSubido ? const Color(0xFFDCFCE7) : const Color(0xFF0284C7),
                     backgroundColor: const Color(0xFFF1F5F9),
-                    checkmarkColor: Colors.white,
+                    checkmarkColor: yaSubido ? const Color(0xFF15803D) : Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    onSelected: (bool selected) {
-                      setState(() {
-                        if (selected) {
-                          _seleccionados.add(ProcedimientoEstudioItem(titulo: titulo, categoria: p.categoria, duracionMinutos: minutos));
-                        } else {
-                          _seleccionados.removeWhere((item) => item.titulo == titulo);
-                        }
-                        _totalMinutosAgregados = _seleccionados.fold(0, (acc, item) => acc + item.duracionMinutos);
-                      });
-                    },
+                    onSelected: yaSubido
+                        ? null
+                        : (bool selected) {
+                            setState(() {
+                              if (selected) {
+                                if (!_seleccionados.any((item) => item.titulo.toLowerCase() == titulo.toLowerCase())) {
+                                  _seleccionados.add(ProcedimientoEstudioItem(titulo: titulo, categoria: p.categoria, duracionMinutos: minutos));
+                                }
+                              } else {
+                                _seleccionados.removeWhere((item) => item.titulo.toLowerCase() == titulo.toLowerCase());
+                              }
+                              _totalMinutosAgregados = _seleccionados
+                                  .where((item) => !item.subido)
+                                  .fold(0, (acc, item) => acc + item.duracionMinutos);
+                            });
+                          },
                   );
                 }).toList(),
               ),

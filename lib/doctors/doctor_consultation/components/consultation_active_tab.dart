@@ -338,17 +338,46 @@ class _ConsultationActiveTabState extends State<ConsultationActiveTab> {
           Wrap(
             spacing: 8, runSpacing: 8,
             children: _estudiosDoctor.map((est) {
-              final sel = _estudiosSeleccionados.contains(est);
+              final sel = _estudiosSeleccionados.any((e) => e.toLowerCase() == est.toLowerCase());
+              final yaSubido = _examenesSubidos.any(
+                (e) =>
+                    (e['tipo_examen']?.toString().toLowerCase() == est.toLowerCase()) ||
+                    (e['titulo']?.toString().toLowerCase().contains(est.toLowerCase()) ?? false),
+              );
               return FilterChip(
-                label: Text(est, style: TextStyle(fontSize: 12, fontWeight: sel ? FontWeight.bold : FontWeight.normal, color: sel ? const Color(0xFF0369A1) : const Color(0xFF334155))),
-                selected: sel, selectedColor: const Color(0xFFE0F2FE), backgroundColor: const Color(0xFFF8FAFC),
-                checkmarkColor: const Color(0xFF0284C7), side: BorderSide(color: sel ? const Color(0xFF0284C7) : const Color(0xFFCBD5E1)),
-                onSelected: (val) {
-                  setState(() {
-                    if (val) { _estudiosSeleccionados.add(est); } else { _estudiosSeleccionados.remove(est); }
-                  });
-                  _guardarBorradorManual(mostrarSnack: false);
-                },
+                label: Text(
+                  yaSubido ? '$est (Ya agregado)' : est,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: (sel || yaSubido) ? FontWeight.bold : FontWeight.normal,
+                    color: yaSubido
+                        ? const Color(0xFF15803D)
+                        : (sel ? const Color(0xFF0369A1) : const Color(0xFF334155)),
+                  ),
+                ),
+                selected: sel || yaSubido,
+                selectedColor: yaSubido ? const Color(0xFFDCFCE7) : const Color(0xFFE0F2FE),
+                backgroundColor: const Color(0xFFF8FAFC),
+                checkmarkColor: yaSubido ? const Color(0xFF15803D) : const Color(0xFF0284C7),
+                side: BorderSide(
+                  color: yaSubido
+                      ? const Color(0xFF86EFAC)
+                      : (sel ? const Color(0xFF0284C7) : const Color(0xFFCBD5E1)),
+                ),
+                onSelected: yaSubido
+                    ? null
+                    : (val) {
+                        setState(() {
+                          if (val) {
+                            if (!_estudiosSeleccionados.any((e) => e.toLowerCase() == est.toLowerCase())) {
+                              _estudiosSeleccionados.add(est);
+                            }
+                          } else {
+                            _estudiosSeleccionados.removeWhere((e) => e.toLowerCase() == est.toLowerCase());
+                          }
+                        });
+                        _guardarBorradorManual(mostrarSnack: false);
+                      },
               );
             }).toList(),
           ),
