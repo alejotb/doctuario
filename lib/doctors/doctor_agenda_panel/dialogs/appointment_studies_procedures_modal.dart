@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../backend/supabase/supabase.dart';
 import '../../../services/emergency_appointment_service.dart';
 import '../../../services/medical_exam_service.dart';
@@ -16,6 +17,7 @@ class ProcedimientoEstudioItem {
   PlatformFile? archivo;
   bool subido = false;
   bool subiendo = false;
+  bool tiempoAplicado = false;
 
   ProcedimientoEstudioItem({
     required this.titulo,
@@ -24,6 +26,7 @@ class ProcedimientoEstudioItem {
     this.archivo,
     this.subido = false,
     this.subiendo = false,
+    this.tiempoAplicado = false,
   });
 }
 
@@ -92,6 +95,12 @@ class _AppointmentStudiesProceduresModalState
   Future<void> _cargarEstudiosDelDoctor() async {
     final activos = await DoctorStudiesService.instance.obtenerEstudiosActivos(widget.idDoctor);
     final yaRegistrados = await MedicalExamService().obtenerExamenesPorCita(widget.cita.id);
+    List<String> aplicadosGuardados = [];
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      aplicadosGuardados = prefs.getStringList('cita_estudios_aplicados_${widget.cita.id}') ?? [];
+    } catch (_) {}
+
     if (mounted) {
       setState(() {
         _estudiosDisponibles = activos;
@@ -108,9 +117,29 @@ class _AppointmentStudiesProceduresModalState
               categoria: matchConfig.isNotEmpty ? matchConfig.first.categoria : (ex.tipoExamen ?? 'Estudio Médico'),
               duracionMinutos: matchConfig.isNotEmpty ? matchConfig.first.duracionMinutos : 0,
               subido: true,
+              tiempoAplicado: true,
             ));
           }
         }
+        for (final tituloAplicado in aplicadosGuardados) {
+          final yaEnLista = _seleccionados.any(
+            (item) => item.titulo.toLowerCase() == tituloAplicado.toLowerCase(),
+          );
+          if (!yaEnLista) {
+            final matchConfig = activos.where((c) => c.titulo.toLowerCase() == tituloAplicado.toLowerCase()).toList();
+            _seleccionados.add(ProcedimientoEstudioItem(
+              titulo: matchConfig.isNotEmpty ? matchConfig.first.titulo : tituloAplicado,
+              categoria: matchConfig.isNotEmpty ? matchConfig.first.categoria : 'Estudio Médico',
+              duracionMinutos: matchConfig.isNotEmpty ? matchConfig.first.duracionMinutos : 0,
+              subido: false,
+              tiempoAplicado: true,
+            ));
+          }
+        }
+        _totalMinutosAgregados = _seleccionados
+            .where((item) => !item.subido && !item.tiempoAplicado)
+            .fold(0, (acc, item) => acc + item.duracionMinutos);
+        _horariosYaRecalculados = _totalMinutosAgregados == 0 && _seleccionados.any((e) => e.tiempoAplicado);
         _cargandoEstudios = false;
       });
     }
@@ -193,31 +222,34 @@ class _AppointmentStudiesProceduresModalState
                   final existente = _seleccionados.where((item) => item.titulo.toLowerCase() == titulo.toLowerCase()).toList();
                   final bool estaSeleccionado = existente.isNotEmpty;
                   final bool yaSubido = estaSeleccionado && existente.first.subido;
+                  final bool yaBloqueado = yaSubido || (estaSeleccionado && existente.first.tiempoAplicado);
 
                   return FilterChip(
                     avatar: Icon(
-                      yaSubido ? Icons.task_alt_rounded : icono,
+                      yaBloqueado ? Icons.task_alt_rounded : icono,
                       size: 16,
-                      color: yaSubido
+                      color: yaBloqueado
                           ? const Color(0xFF15803D)
                           : (estaSeleccionado ? Colors.white : const Color(0xFF0284C7)),
                     ),
                     label: Text(
-                      yaSubido ? '$titulo (Ya agregado)' : '$titulo (+$minutos min)',
+                      yaSubido
+                          ? '$titulo (Subido)'
+                          : (yaBloqueado ? '$titulo (Ya agregado)' : '$titulo (+$minutos min)'),
                     ),
                     labelStyle: TextStyle(
                       fontSize: 12,
                       fontWeight: estaSeleccionado ? FontWeight.bold : FontWeight.normal,
-                      color: yaSubido
+                      color: yaBloqueado
                           ? const Color(0xFF15803D)
                           : (estaSeleccionado ? Colors.white : const Color(0xFF0F172A)),
                     ),
                     selected: estaSeleccionado,
-                    selectedColor: yaSubido ? const Color(0xFFDCFCE7) : const Color(0xFF0284C7),
+                    selectedColor: yaBloqueado ? const Color(0xFFDCFCE7) : const Color(0xFF0284C7),
                     backgroundColor: const Color(0xFFF1F5F9),
-                    checkmarkColor: yaSubido ? const Color(0xFF15803D) : Colors.white,
+                    checkmarkColor: yaBloqueado ? const Color(0xFF15803D) : Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    onSelected: yaSubido
+                    onSelected: yaBloqueado
                         ? null
                         : (bool selected) {
                             setState(() {
@@ -229,8 +261,9 @@ class _AppointmentStudiesProceduresModalState
                                 _seleccionados.removeWhere((item) => item.titulo.toLowerCase() == titulo.toLowerCase());
                               }
                               _totalMinutosAgregados = _seleccionados
-                                  .where((item) => !item.subido)
+                                  .where((item) => !item.subido && !item.tiempoAplicado)
                                   .fold(0, (acc, item) => acc + item.duracionMinutos);
+                              _horariosYaRecalculados = _totalMinutosAgregados == 0 && _seleccionados.any((e) => e.tiempoAplicado);
                             });
                           },
                   );
@@ -257,15 +290,15 @@ class _AppointmentStudiesProceduresModalState
                         Expanded(
                           child: Text(
                             _horariosYaRecalculados
-                                ? '✅ Horarios recalculados: +$_totalMinutosAgregados min añadidos a las siguientes citas.'
-                                : '⏱️ Tiempo extra estimado: +$_totalMinutosAgregados min en esta consulta.',
+                                ? '✅ Tiempo de estudios aplicados a la consulta y citas siguientes.'
+                                : '⏱️ Tiempo extra por nuevos estudios: +$_totalMinutosAgregados min.',
                             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: _horariosYaRecalculados ? const Color(0xFF065F46) : const Color(0xFF92400E)),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    if (!_horariosYaRecalculados)
+                    if (!_horariosYaRecalculados && _totalMinutosAgregados > 0)
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
@@ -311,7 +344,8 @@ class _AppointmentStudiesProceduresModalState
     setState(() => _recalculandoHorarios = true);
 
     try {
-      final nombres = _seleccionados.map((e) => e.titulo).toList();
+      final nuevos = _seleccionados.where((e) => !e.tiempoAplicado && !e.subido).toList();
+      final nombres = nuevos.map((e) => e.titulo).toList();
       final desplazadas = await EmergencyAppointmentService().aplicarRetrasoPorProcedimiento(
         idDoctor: widget.idDoctor,
         idCitaActual: widget.cita.id,
@@ -319,9 +353,23 @@ class _AppointmentStudiesProceduresModalState
         nombresProcedimientos: nombres,
       );
 
+      for (final item in nuevos) {
+        item.tiempoAplicado = true;
+      }
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final todosAplicados = _seleccionados
+            .where((e) => e.tiempoAplicado)
+            .map((e) => e.titulo)
+            .toSet()
+            .toList();
+        await prefs.setStringList('cita_estudios_aplicados_${widget.cita.id}', todosAplicados);
+      } catch (_) {}
+
       if (mounted) {
         setState(() {
           _recalculandoHorarios = false;
+          _totalMinutosAgregados = 0;
           _horariosYaRecalculados = true;
         });
         widget.onHorariosRecalculados();
