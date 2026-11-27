@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../auth/supabase_auth/auth_util.dart';
@@ -37,7 +38,8 @@ class DoctorAgendaPanelWidget extends StatefulWidget {
   State<DoctorAgendaPanelWidget> createState() => _DoctorAgendaPanelWidgetState();
 }
 
-class _DoctorAgendaPanelWidgetState extends State<DoctorAgendaPanelWidget> {
+class _DoctorAgendaPanelWidgetState extends State<DoctorAgendaPanelWidget>
+    with WidgetsBindingObserver {
   DateTime _fechaSeleccionada = DateTime.now();
   late DateTime _inicioSemana;
   List<CitasRow> _citasDelDia = [], _citasDeLaSemana = [];
@@ -50,16 +52,28 @@ class _DoctorAgendaPanelWidgetState extends State<DoctorAgendaPanelWidget> {
   List<HistoriasClinicasRow> _historiasPreviasPaciente = []; List<ExamenesMedicosRow> _examenesPendientes = [];
   Map<String, UsuariosRow> _pacientesExamenesMap = {}; String _filtroEstado = 'todos';
   RealtimeChannel? _citasChannel;
+  Timer? _autoSyncTimer;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _sedeSeleccionadaId = widget.idSedeInicial;
     _fechaSeleccionada = DateTime.now();
     _inicioSemana = _calcularInicioSemana(_fechaSeleccionada);
     I18nService.instance.addListener(_onLocaleChanged);
     _cargarDatos();
     _suscribirRealtimeCitas();
+    _autoSyncTimer = Timer.periodic(const Duration(seconds: 45), (_) {
+      if (mounted) _cargarDatos();
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      _cargarDatos();
+    }
   }
 
   void _suscribirRealtimeCitas() {
@@ -88,6 +102,8 @@ class _DoctorAgendaPanelWidgetState extends State<DoctorAgendaPanelWidget> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _autoSyncTimer?.cancel();
     if (_citasChannel != null) {
       SupaFlow.client.removeChannel(_citasChannel!);
       _citasChannel = null;

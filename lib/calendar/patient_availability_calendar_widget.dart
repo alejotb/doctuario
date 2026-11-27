@@ -38,6 +38,7 @@ class _PatientAvailabilityCalendarWidgetState
   String? _sedeSeleccionadaId;
   List<HorariosDisponibilidadRow> _horarios = [];
   bool _isLoading = true;
+  RealtimeChannel? _citasChannel;
 
   DoctorSedesRow? get _sedeActual {
     if (_sedeSeleccionadaId == null) return null;
@@ -50,6 +51,36 @@ class _PatientAvailabilityCalendarWidgetState
     super.initState();
     _cargarDatosDoctor();
     _cargarDisponibilidadDia(_selectedDay);
+    _suscribirRealtimeCitas();
+  }
+
+  void _suscribirRealtimeCitas() {
+    if (widget.idDoctor.isEmpty) return;
+    _citasChannel = SupaFlow.client
+        .channel('pat-disp-${widget.idDoctor}')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'citas',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'id_doctor',
+            value: widget.idDoctor,
+          ),
+          callback: (_) {
+            if (mounted) _cargarDisponibilidadDia(_selectedDay);
+          },
+        )
+        .subscribe();
+  }
+
+  @override
+  void dispose() {
+    if (_citasChannel != null) {
+      SupaFlow.client.removeChannel(_citasChannel!);
+      _citasChannel = null;
+    }
+    super.dispose();
   }
 
   Future<void> _cargarDatosDoctor() async {
@@ -60,14 +91,14 @@ class _PatientAvailabilityCalendarWidgetState
       if (docs.isNotEmpty) _doctorInfo = docs.first;
 
       _sedes = await DoctorSedesTable().queryRows(
-        queryFn: (q) => q.eq('id', widget.idDoctor),
+        queryFn: (q) => q.eq('id_doctor', widget.idDoctor),
       );
       if (_sedes.isNotEmpty) {
         _sedeSeleccionadaId = _sedes.first.id;
       }
 
       _horarios = await HorariosDisponibilidadTable().queryRows(
-        queryFn: (q) => q.eq('id', widget.idDoctor),
+        queryFn: (q) => q.eq('id_doctor', widget.idDoctor),
       );
     } catch (e) {
       debugPrint('Error cargando doctor: $e');
@@ -378,27 +409,32 @@ class _PatientAvailabilityCalendarWidgetState
                 ? const Center(child: CircularProgressIndicator())
                 : _sedeActual?.modalidadAtencion == 'orden_llegada'
                     ? _buildOrdenLlegadaView(cupoLleno)
-                    : bloques.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.event_busy,
-                                size: 56, color: Colors.grey.shade400),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'El médico no tiene horarios habilitados para esta fecha o ya concluyó el horario de atención.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.grey),
+                    : () {
+                        final bloquesVisibles = bloques
+                            .where((b) => (b['disponible'] == true) && !(b['esAlmuerzo'] ?? false))
+                            .toList();
+                        if (bloquesVisibles.isEmpty) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.event_busy,
+                                    size: 56, color: Colors.grey.shade400),
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'No quedan horas disponibles para esta fecha o ya concluyó el horario de atención.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
+                          );
+                        }
+                        return ListView.builder(
                         padding: const EdgeInsets.all(16),
-                        itemCount: bloques.length,
+                        itemCount: bloquesVisibles.length,
                         itemBuilder: (context, index) {
-                          final b = bloques[index];
+                          final b = bloquesVisibles[index];
                           final DateTime inicio = b['horaInicio'];
                           final DateTime fin = b['horaFin'];
                           final bool esAlmuerzo = b['esAlmuerzo'] ?? false;
@@ -510,7 +546,8 @@ class _PatientAvailabilityCalendarWidgetState
                             ),
                           );
                         },
-                      ),
+                      );
+                      }(),
           ),
         ],
       ),

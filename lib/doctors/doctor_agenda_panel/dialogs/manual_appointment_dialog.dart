@@ -69,11 +69,24 @@ class _ManualAppointmentDialogState extends State<ManualAppointmentDialog> {
   List<String> _estudiosSeleccionados = [];
   String _lazoFamiliar = 'Hijo(a)';
 
+  Set<String> _horasOcupadas = {};
+  int _citasDelDiaCount = 0;
+  int _cupoMaximoDia = 15;
+
   static const List<String> _horasDisponibles = [
     '07:30 AM', '08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',
     '11:00 AM', '11:30 AM', '12:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM',
     '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM', '06:00 PM',
   ];
+
+  List<String> get _horasLibres =>
+      _horasDisponibles.where((h) => !_horasOcupadas.contains(h)).toList();
+
+  List<String> get _horasParaDropdown {
+    if (_esSobrecita || widget.esEmergencia) return _horasDisponibles;
+    final libres = _horasLibres;
+    return libres.isNotEmpty ? libres : _horasDisponibles;
+  }
 
   @override
   void initState() {
@@ -90,6 +103,80 @@ class _ManualAppointmentDialogState extends State<ManualAppointmentDialog> {
       _detectarSedePorFechaHora(_fechaCita, _horaSeleccionadaStr);
     } else {
       _cargarSedesYDetectar();
+    }
+    _cargarDisponibilidadDia();
+  }
+
+  String _formatearHora12(DateTime dt) {
+    final local = dt.toLocal();
+    int h = local.hour;
+    final m = local.minute;
+    final ampm = h >= 12 ? 'PM' : 'AM';
+    if (h > 12) h -= 12;
+    if (h == 0) h = 12;
+    return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')} $ampm';
+  }
+
+  Future<void> _cargarDisponibilidadDia() async {
+    try {
+      final inicioDia = DateTime(_fechaCita.year, _fechaCita.month, _fechaCita.day, 0, 0, 0);
+      final finDia = DateTime(_fechaCita.year, _fechaCita.month, _fechaCita.day, 23, 59, 59);
+      final client = DualDatabaseConfig.instance.doctorClient;
+
+      final citasRes = await client
+          .from('citas')
+          .select('fecha_hora, estado, id_sede')
+          .eq('id_doctor', widget.idDoctor)
+          .gte('fecha_hora', inicioDia.toUtc().toIso8601String())
+          .lte('fecha_hora', finDia.toUtc().toIso8601String())
+          .neq('estado', 'cancelada')
+          .neq('estado', 'rechazada');
+
+      int cupo = 15;
+      try {
+        final docRes = await client
+            .from('doctores')
+            .select('limite_pacientes_dia')
+            .eq('id', widget.idDoctor)
+            .maybeSingle();
+        if (docRes != null && docRes['limite_pacientes_dia'] != null) {
+          cupo = int.tryParse(docRes['limite_pacientes_dia'].toString()) ?? 15;
+        }
+        final horRes = await client
+            .from('horarios_disponibilidad')
+            .select('cupo_maximo')
+            .eq('id_doctor', widget.idDoctor)
+            .eq('dia_semana', _fechaCita.weekday)
+            .maybeSingle();
+        if (horRes != null && horRes['cupo_maximo'] != null) {
+          cupo = int.tryParse(horRes['cupo_maximo'].toString()) ?? cupo;
+        }
+      } catch (_) {}
+
+      final ocupadas = <String>{};
+      int count = 0;
+      for (final r in (citasRes as List)) {
+        count++;
+        final fhStr = r['fecha_hora']?.toString();
+        if (fhStr != null) {
+          final dt = DateTime.tryParse(fhStr);
+          if (dt != null) ocupadas.add(_formatearHora12(dt));
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _horasOcupadas = ocupadas;
+          _citasDelDiaCount = count;
+          _cupoMaximoDia = cupo;
+          final dropdownItems = _horasParaDropdown;
+          if (!dropdownItems.contains(_horaSeleccionadaStr) && dropdownItems.isNotEmpty) {
+            _horaSeleccionadaStr = dropdownItems.first;
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('ManualAppointmentDialog: Error cargando disponibilidad: $e');
     }
   }
 
@@ -446,7 +533,8 @@ class _ManualAppointmentDialogState extends State<ManualAppointmentDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (!widget.esEmergencia)
+              if (!widget.esEmergencia &&
+                  (_esSobrecita || widget.esSobrecita || _citasDelDiaCount >= _cupoMaximoDia || _horasLibres.isEmpty))
                 Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
@@ -458,9 +546,20 @@ class _ManualAppointmentDialogState extends State<ManualAppointmentDialog> {
                     dense: true,
                     activeTrackColor: const Color(0xFFD97706),
                     title: Text(isEs ? 'Sobrecitar / Cupo adicional' : 'Overbook / Extra patient slot', style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
-                    subtitle: Text(isEs ? 'El doctor deberá confirmar esta cita adicional en su cuenta' : 'The doctor must confirm this extra appointment in their account', style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                    subtitle: Text(
+                      _horasLibres.isEmpty
+                          ? (isEs ? 'Todos los horarios están ocupados ($_citasDelDiaCount/$_cupoMaximoDia). Activa para sobrecitar.' : 'All slots are taken ($_citasDelDiaCount/$_cupoMaximoDia). Enable to overbook.')
+                          : (isEs ? 'Cupo diario alcanzado ($_citasDelDiaCount/$_cupoMaximoDia). El doctor deberá confirmar.' : 'Daily limit reached ($_citasDelDiaCount/$_cupoMaximoDia). Doctor must confirm.'),
+                      style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                    ),
                     value: _esSobrecita,
-                    onChanged: (val) => setState(() => _esSobrecita = val),
+                    onChanged: (val) => setState(() {
+                      _esSobrecita = val;
+                      final dropdownItems = _horasParaDropdown;
+                      if (!dropdownItems.contains(_horaSeleccionadaStr) && dropdownItems.isNotEmpty) {
+                        _horaSeleccionadaStr = dropdownItems.first;
+                      }
+                    }),
                   ),
                 ),
               PatientSelectorSection(
@@ -482,9 +581,15 @@ class _ManualAppointmentDialogState extends State<ManualAppointmentDialog> {
                         ? _sedesLocales.firstWhere((s) => s.id == _idSedeCita).modalidadAtencion
                         : (_sedesLocales.isNotEmpty ? _sedesLocales.first.modalidadAtencion : null)) ==
                     'orden_llegada',
-                horasDisponibles: _horasDisponibles,
-                onSedeChanged: (val) => setState(() { _idSedeCita = val; _sedeDetectadaAuto = null; }),
-                onFechaChanged: (picked) => setState(() { _fechaCita = picked; _detectarSedePorFechaHora(picked, _horaSeleccionadaStr); }),
+                horasDisponibles: _horasParaDropdown,
+                onSedeChanged: (val) {
+                  setState(() { _idSedeCita = val; _sedeDetectadaAuto = null; });
+                  _cargarDisponibilidadDia();
+                },
+                onFechaChanged: (picked) {
+                  setState(() { _fechaCita = picked; _detectarSedePorFechaHora(picked, _horaSeleccionadaStr); });
+                  _cargarDisponibilidadDia();
+                },
                 onHoraChanged: (val) => setState(() { _horaSeleccionadaStr = val; _detectarSedePorFechaHora(_fechaCita, val); }),
                 onCrearSedeRapida: _crearSedePrincipalRapida, onIrAConfigurarSedes: _navegarAConfigurarSedes,
               ),
