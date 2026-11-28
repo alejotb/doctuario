@@ -1,11 +1,8 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../backend/supabase/supabase.dart';
 import '../../services/i18n_service.dart';
-import '../../services/medical_exam_service.dart';
 import 'medical_exam_viewer_dialog.dart';
 
 /// Tarjeta de acceso rápido que muestra los últimos exámenes del paciente en consulta,
@@ -29,148 +26,19 @@ class PatientLatestExamsQuickCard extends StatefulWidget {
 }
 
 class _PatientLatestExamsQuickCardState extends State<PatientLatestExamsQuickCard> {
-  static const List<String> _kExamenesPorDefecto = [
-    'Hematología Completa', 'Perfil 20 / Química', 'Examen de Orina',
-    'Rayos X de Tórax', 'Ecografía Abdominal', 'Electrocardiograma (ECG)',
-    'Perfil Lipídico', 'Glicemia e Insulina', 'Ecocardiograma',
-    'Tomografía (TAC)', 'Resonancia (RMN)', 'Biopsia / Citología',
-  ];
-
-  final TextEditingController _searchCtrl = TextEditingController();
   List<ExamenesMedicosRow> _ultimosExamenesPorTipo = [];
-  List<String> _examenesRealizados = [];
-  String? _examenSeleccionado;
-  String _filtroTexto = '';
   bool _isLoading = true;
-  bool _isUploading = false;
 
   @override
   void initState() {
     super.initState();
     _cargarExamenes();
-    _cargarExamenesRealizadosDoctor();
   }
 
   @override
   void didUpdateWidget(covariant PatientLatestExamsQuickCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.idPaciente != widget.idPaciente) _cargarExamenes();
-  }
-
-  @override
-  void dispose() {
-    _searchCtrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _cargarExamenesRealizadosDoctor() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final key = 'doctor_examenes_realizados_${widget.idDoctor ?? "default"}';
-      final guardados = prefs.getStringList(key);
-      if (mounted) {
-        setState(() => _examenesRealizados = (guardados != null && guardados.isNotEmpty) ? guardados : List<String>.from(_kExamenesPorDefecto));
-      }
-    } catch (_) {
-      if (mounted) setState(() => _examenesRealizados = List<String>.from(_kExamenesPorDefecto));
-    }
-  }
-
-  Future<void> _guardarExamenesDoctor(List<String> lista) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList('doctor_examenes_realizados_${widget.idDoctor ?? "default"}', lista);
-    } catch (_) {}
-  }
-
-  void _agregarNuevoExamen(String nuevo) {
-    final limpio = nuevo.trim();
-    if (limpio.isEmpty) return;
-    if (!_examenesRealizados.any((e) => e.toLowerCase() == limpio.toLowerCase())) {
-      final actualizados = [limpio, ..._examenesRealizados];
-      setState(() {
-        _examenesRealizados = actualizados;
-        _examenSeleccionado = limpio;
-        _filtroTexto = '';
-        _searchCtrl.clear();
-      });
-      _guardarExamenesDoctor(actualizados);
-    } else {
-      setState(() {
-        _examenSeleccionado = _examenesRealizados.firstWhere((e) => e.toLowerCase() == limpio.toLowerCase());
-        _filtroTexto = '';
-        _searchCtrl.clear();
-      });
-    }
-  }
-
-  String _detectarTipo(String titulo) {
-    final t = titulo.toLowerCase();
-    if (t.contains('lab') || t.contains('sangre') || t.contains('hemato') || t.contains('química') || t.contains('orina') || t.contains('perfil') || t.contains('glicemia')) return 'Laboratorio Clínico';
-    if (t.contains('rayos') || t.contains('rx')) return 'Rayos X e Imagenología';
-    if (t.contains('eco') || t.contains('ultra')) return 'Ecografía / Ultrasonido';
-    if (t.contains('tomo') || t.contains('tac')) return 'Tomografía Computarizada';
-    if (t.contains('reson') || t.contains('rmn')) return 'Resonancia Magnética';
-    if (t.contains('cardio') || t.contains('ecg') || t.contains('ekg') || t.contains('holter')) return 'Cardiología';
-    if (t.contains('biops') || t.contains('patol') || t.contains('cito')) return 'Anatomía Patológica';
-    return 'Estudio Médico General';
-  }
-
-  Future<void> _subirResultadoDirecto() async {
-    final titulo = _examenSeleccionado ?? (_searchCtrl.text.trim().isNotEmpty ? _searchCtrl.text.trim() : null);
-    if (titulo == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Selecciona o escribe el nombre del examen.'), backgroundColor: Color(0xFFF59E0B)));
-      return;
-    }
-
-    try {
-      final res = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg', 'webp', 'dcm', 'dicom', 'doc', 'docx', 'txt'],
-        withData: true,
-      );
-      if (res == null || res.files.isEmpty) return;
-      final file = res.files.first;
-      final bytes = file.bytes;
-      if (bytes == null || bytes.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('No se pudo leer el archivo seleccionado. Intenta nuevamente.'),
-            backgroundColor: Colors.red,
-          ));
-        }
-        return;
-      }
-
-      setState(() {
-        _isUploading = true;
-        _examenSeleccionado = titulo;
-      });
-      final tipo = _detectarTipo(titulo);
-      final currentUid = SupaFlow.client.auth.currentUser?.id;
-
-      await MedicalExamService().subirExamen(
-        idPaciente: widget.idPaciente,
-        subidoPorUsuarioId: currentUid,
-        idDoctor: widget.idDoctor,
-        titulo: titulo,
-        tipoExamen: tipo,
-        fileName: file.name,
-        fileBytes: bytes,
-        fechaEstudio: DateTime.now(),
-        estadoInicial: 'por_revisar',
-      );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('✅ Resultado de "$titulo" subido correctamente.'), backgroundColor: const Color(0xFF10B981)));
-        await _cargarExamenes();
-      }
-    } catch (e, st) {
-      debugPrint('Error subiendo resultado de examen: $e\n$st');
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al subir resultado: $e'), backgroundColor: Colors.red));
-    } finally {
-      if (mounted) setState(() => _isUploading = false);
-    }
   }
 
   Future<void> _cargarExamenes() async {
@@ -181,28 +49,43 @@ class _PatientLatestExamsQuickCardState extends State<PatientLatestExamsQuickCar
     setState(() => _isLoading = true);
     try {
       final central = DualDatabaseConfig.instance.patientClient;
-      final pacRows = await central.from('pacientes').select('id').eq('id_usuario', widget.idPaciente);
+      final pacRows = await central
+          .from('pacientes')
+          .select('id, id_usuario')
+          .or('id.eq.${widget.idPaciente},id_usuario.eq.${widget.idPaciente}');
       final List<String> pacienteIds = [widget.idPaciente];
-      for (final r in pacRows) {
+      for (final r in (pacRows as List)) {
         final idStr = r['id']?.toString();
-        if (idStr != null && !pacienteIds.contains(idStr)) pacienteIds.add(idStr);
-      }
-      final List<dynamic> rows = await central.from('examenes_medicos').select().inFilter('id_paciente', pacienteIds).order('fecha_estudio', ascending: false);
-      final todos = rows.map((r) => ExamenesMedicosRow(Map<String, dynamic>.from(r as Map))).toList();
-      todos.sort((a, b) {
-        final fA = a.fechaEstudio ?? a.createdAt;
-        final fB = b.fechaEstudio ?? b.createdAt;
-        return fB.compareTo(fA);
-      });
-      final Map<String, ExamenesMedicosRow> porTitulo = {};
-      for (final ex in todos) {
-        final key = (ex.titulo ?? ex.tipoExamen ?? 'Estudio').trim().toLowerCase();
-        if (!porTitulo.containsKey(key)) {
-          porTitulo[key] = ex;
+        final usrStr = r['id_usuario']?.toString();
+        if (idStr != null && idStr.isNotEmpty && !pacienteIds.contains(idStr)) {
+          pacienteIds.add(idStr);
+        }
+        if (usrStr != null && usrStr.isNotEmpty && !pacienteIds.contains(usrStr)) {
+          pacienteIds.add(usrStr);
         }
       }
-      final filtrados = porTitulo.values.toList();
-      if (mounted) setState(() { _ultimosExamenesPorTipo = filtrados; _isLoading = false; });
+      final List<dynamic> rows = await central
+          .from('examenes_medicos')
+          .select()
+          .inFilter('id_paciente', pacienteIds)
+          .order('fecha_estudio', ascending: false);
+
+      final todos = rows
+          .map((r) => ExamenesMedicosRow(Map<String, dynamic>.from(r as Map)))
+          .where((ex) {
+            final compartido = ex.getField<bool>('compartir_con_paciente') ?? true;
+            final esDelDoctor = widget.idDoctor != null &&
+                (ex.idDoctor == widget.idDoctor || ex.subidoPorUsuarioId == widget.idDoctor);
+            return compartido || esDelDoctor;
+          })
+          .toList()
+        ..sort((a, b) {
+          final fA = a.fechaEstudio ?? a.createdAt;
+          final fB = b.fechaEstudio ?? b.createdAt;
+          return fB.compareTo(fA);
+        });
+
+      if (mounted) setState(() { _ultimosExamenesPorTipo = todos; _isLoading = false; });
     } catch (e) {
       debugPrint('[PatientLatestExamsQuickCard] Error cargando exámenes: $e');
       if (mounted) setState(() => _isLoading = false);
@@ -233,10 +116,6 @@ class _PatientLatestExamsQuickCardState extends State<PatientLatestExamsQuickCar
   @override
   Widget build(BuildContext context) {
     final isEs = I18nService.instance.isSpanish;
-    final listaFiltrada = _filtroTexto.isEmpty
-        ? _examenesRealizados
-        : _examenesRealizados.where((e) => e.toLowerCase().contains(_filtroTexto.toLowerCase())).toList();
-    final bool coincideExacto = _examenesRealizados.any((e) => e.toLowerCase() == _filtroTexto.toLowerCase());
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -261,130 +140,6 @@ class _PatientLatestExamsQuickCardState extends State<PatientLatestExamsQuickCar
                 Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(12)), child: Text('${_ultimosExamenesPorTipo.length} ${isEs ? "recientes" : "recent"}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF475569)))),
             ],
           ),
-          const SizedBox(height: 10),
-          Container(
-            height: 38,
-            decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFE2E8F0))),
-            child: Row(children: [
-              const Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Icon(Icons.search_rounded, size: 17, color: Color(0xFF64748B))),
-              Expanded(
-                child: TextField(
-                  controller: _searchCtrl,
-                  onChanged: (v) => setState(() => _filtroTexto = v.trim()),
-                  style: const TextStyle(fontSize: 12),
-                  decoration: InputDecoration(hintText: isEs ? 'Buscar o crear examen (ej. Perfil 20)...' : 'Search or create exam...', hintStyle: TextStyle(fontSize: 11.5, color: Colors.grey.shade400), border: InputBorder.none, isDense: true),
-                ),
-              ),
-              if (_filtroTexto.isNotEmpty && !coincideExacto)
-                TextButton.icon(
-                  onPressed: () => _agregarNuevoExamen(_filtroTexto),
-                  icon: const Icon(Icons.add_rounded, size: 14, color: Color(0xFF0284C7)),
-                  label: Text(isEs ? 'Agregar' : 'Add', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0284C7))),
-                  style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8)),
-                ),
-              if (_filtroTexto.isNotEmpty)
-                IconButton(icon: const Icon(Icons.clear_rounded, size: 15, color: Colors.grey), onPressed: () { _searchCtrl.clear(); setState(() => _filtroTexto = ''); }),
-            ]),
-          ),
-          const SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(children: [
-              ...listaFiltrada.map((nombre) {
-                final esSel = _examenSeleccionado == nombre;
-                final tieneDoc = _ultimosExamenesPorTipo.any(
-                  (ex) => (ex.titulo ?? '').toLowerCase() == nombre.toLowerCase(),
-                );
-                return Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child: FilterChip(
-                    selected: esSel || tieneDoc,
-                    avatar: tieneDoc
-                        ? Icon(
-                            Icons.description_rounded,
-                            size: 14,
-                            color: esSel ? Colors.white : const Color(0xFF15803D),
-                          )
-                        : null,
-                    label: Text(nombre),
-                    labelStyle: TextStyle(
-                      fontSize: 11,
-                      fontWeight: (esSel || tieneDoc) ? FontWeight.bold : FontWeight.normal,
-                      color: esSel
-                          ? Colors.white
-                          : (tieneDoc ? const Color(0xFF15803D) : const Color(0xFF334155)),
-                    ),
-                    selectedColor: esSel ? const Color(0xFF0284C7) : const Color(0xFFDCFCE7),
-                    backgroundColor: const Color(0xFFF1F5F9),
-                    checkmarkColor: esSel ? Colors.white : const Color(0xFF15803D),
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: esSel
-                            ? const Color(0xFF0284C7)
-                            : (tieneDoc ? const Color(0xFF86EFAC) : const Color(0xFFCBD5E1)),
-                      ),
-                    ),
-                    onSelected: (sel) => setState(() => _examenSeleccionado = sel ? nombre : null),
-                  ),
-                );
-              }),
-            ]),
-          ),
-          const SizedBox(height: 8),
-          () {
-            final matchList = _examenSeleccionado == null
-                ? <ExamenesMedicosRow>[]
-                : _ultimosExamenesPorTipo
-                    .where((ex) => (ex.titulo ?? '').toLowerCase() == _examenSeleccionado!.toLowerCase())
-                    .toList();
-            final docSeleccionado = matchList.isNotEmpty ? matchList.first : null;
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(color: const Color(0xFFF0FDF4), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFBBF7D0))),
-              child: Row(children: [
-                Icon(Icons.cloud_upload_outlined, size: 17, color: Colors.green.shade700),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    _examenSeleccionado != null ? '${isEs ? "Examen:" : "Exam:"} $_examenSeleccionado' : (isEs ? 'Selecciona un chip para subir resultado' : 'Select a chip to upload result'),
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.green.shade900),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (docSeleccionado != null) ...[
-                  OutlinedButton.icon(
-                    onPressed: () => MedicalExamViewerDialog.show(
-                      context,
-                      examen: docSeleccionado,
-                      paciente: widget.paciente,
-                      onActualizado: _cargarExamenes,
-                    ),
-                    icon: const Icon(Icons.visibility_rounded, size: 14, color: Color(0xFF0284C7)),
-                    label: Text(isEs ? 'Ver' : 'View', style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF0284C7))),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                      side: const BorderSide(color: Color(0xFF0284C7)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                ],
-                ElevatedButton.icon(
-                  onPressed: _isUploading ? null : _subirResultadoDirecto,
-                  icon: _isUploading
-                      ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Icon(Icons.file_upload_outlined, size: 14, color: Colors.white),
-                  label: Text(
-                    isEs ? (_isUploading ? 'Subiendo...' : 'Subir Resultado') : (_isUploading ? 'Uploading...' : 'Upload'),
-                    style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A), padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)), elevation: 0),
-                ),
-              ]),
-            );
-          }(),
           const SizedBox(height: 10),
           if (_isLoading)
             const Center(child: Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator()))

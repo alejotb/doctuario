@@ -113,6 +113,8 @@ class _PatientExamsWidgetState extends State<PatientExamsWidget> {
     final tituloController =
         TextEditingController(text: file.name.split('.').first);
     String tipoExamen = 'Laboratorio';
+    DateTime fechaRealizado = DateTime.now();
+    bool compartirConDoctores = true;
 
     if (!mounted) return;
     final confirmado = await showDialog<bool>(
@@ -129,36 +131,80 @@ class _PatientExamsWidgetState extends State<PatientExamsWidget> {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ],
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: tituloController,
-                decoration: const InputDecoration(
-                  labelText: 'Título del Estudio / Examen',
-                  border: OutlineInputBorder(),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: tituloController,
+                  decoration: const InputDecoration(
+                    labelText: 'Título del Estudio / Examen',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: tipoExamen,
-                decoration: const InputDecoration(
-                  labelText: 'Tipo de Examen',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: tipoExamen,
+                  decoration: const InputDecoration(
+                    labelText: 'Tipo de Examen',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: [
+                    'Laboratorio',
+                    'Imagenología (Rayos X / TAC / RMN)',
+                    'Cardiología (ECG / Ecocardiograma)',
+                    'Ecografía / Ultrasonido',
+                    'Biopsia / Patología',
+                    'Otro',
+                  ].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                  onChanged: (val) {
+                    if (val != null) setModalState(() => tipoExamen = val);
+                  },
                 ),
-                items: [
-                  'Laboratorio',
-                  'Imagenología (Rayos X / TAC / RMN)',
-                  'Cardiología (ECG / Ecocardiograma)',
-                  'Ecografía / Ultrasonido',
-                  'Biopsia / Patología',
-                  'Otro',
-                ].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-                onChanged: (val) {
-                  if (val != null) setModalState(() => tipoExamen = val);
-                },
-              ),
-            ],
+                const SizedBox(height: 12),
+                InkWell(
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: fechaRealizado,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime.now(),
+                    );
+                    if (picked != null) {
+                      setModalState(() => fechaRealizado = picked);
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  child: InputDecorator(
+                    decoration: const InputDecoration(
+                      labelText: 'Fecha en que se realizó',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.calendar_today_rounded, size: 18),
+                    ),
+                    child: Text(
+                      '${fechaRealizado.day.toString().padLeft(2, '0')}/${fechaRealizado.month.toString().padLeft(2, '0')}/${fechaRealizado.year}',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  activeThumbColor: Colors.teal,
+                  title: const Text(
+                    'Compartir con mis doctores',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: const Text(
+                    'Disponible para los médicos que te atiendan',
+                    style: TextStyle(fontSize: 11),
+                  ),
+                  value: compartirConDoctores,
+                  onChanged: (val) => setModalState(() => compartirConDoctores = val),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -188,6 +234,8 @@ class _PatientExamsWidgetState extends State<PatientExamsWidget> {
         tipoExamen: tipoExamen,
         fileName: file.name,
         fileBytes: file.bytes!,
+        fechaEstudio: fechaRealizado,
+        compartirConPaciente: compartirConDoctores,
       );
 
       if (mounted) {

@@ -358,6 +358,7 @@ USING (
   auth.uid() = id_doctor 
   OR auth.uid() = subido_por_usuario_id
   OR public.es_usuario_de_paciente(examenes_medicos.id_paciente, auth.uid())
+  OR public.es_paciente_de_doctor(examenes_medicos.id_paciente, auth.uid())
   OR public.es_secretaria_de_doctor(examenes_medicos.id_doctor, auth.uid())
 )
 WITH CHECK (
