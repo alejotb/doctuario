@@ -8,6 +8,7 @@ import '/services/i18n_service.dart';
 import '../admin/admin_doctor_tenants_modal_widget.dart';
 import '../doctors/components/doctor_logo_config_dialog.dart';
 import '../doctors/components/doctor_gemini_config_dialog.dart';
+import '../doctors/components/doctor_support_dialog.dart';
 import '../doctors/doctor_agenda_panel/dialogs/doctor_vacation_dialog.dart';
 import '../my_account/dialogs/notification_preferences_dialog.dart';
 import '../services/gemini_ai_service.dart';
@@ -466,6 +467,21 @@ class _UserProfileModalState extends State<UserProfileModal> {
                           onTap: () {
                             Navigator.of(context).pop();
                             DoctorGeminiConfigDialog.show(context);
+                          },
+                        ),
+                        ListTile(
+                          dense: true,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 10.0),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                          leading: const Icon(Icons.headset_mic_rounded, color: Color(0xFF0EA5E9), size: 20.0),
+                          title: Text(isSpanish ? 'Soporte y Ayuda (Tickets)' : 'Support & Help (Tickets)', style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.mooli(fontWeight: FontWeight.w500), fontSize: 13.0)),
+                          trailing: const Icon(Icons.chevron_right_rounded, size: 18.0),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            final uid = currentUserUid.isNotEmpty ? currentUserUid : (SupaFlow.client.auth.currentUser?.id ?? '');
+                            if (uid.isNotEmpty) {
+                              DoctorSupportDialog.show(context, idDoctor: uid, doctorNombre: userName);
+                            }
                           },
                         ),
                       ],

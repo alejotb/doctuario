@@ -425,32 +425,6 @@ class _DoctorPublicProfileWidgetState extends State<DoctorPublicProfileWidget> {
                 ],
               ),
             ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(color: Color(0x0F000000), blurRadius: 10, offset: Offset(0, -3)),
-          ],
-        ),
-        child: SafeArea(
-          child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0284C7),
-              foregroundColor: Colors.white,
-              minimumSize: const Size.fromHeight(48),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              elevation: 1,
-            ),
-            onPressed: () => _irAAgendarCita(),
-            icon: const Icon(Icons.calendar_month_rounded, size: 20),
-            label: Text(
-              'Agendar Cita Médica',
-              style: GoogleFonts.mooli(fontSize: 15, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../auth/supabase_auth/auth_util.dart';
 import '../../backend/supabase/supabase.dart';
-import '../../components/user_profile_modal.dart';
 import '../../flutter_flow/flutter_flow_util.dart';
 import '../../my_account/home/home_widget.dart';
-import '../components/doctor_support_dialog.dart';
 import 'components/agenda_metrics_strip.dart';
 import 'services/agenda_appointment_actions.dart';
 import 'views/agenda_responsive_content.dart';
@@ -446,30 +444,21 @@ class _DoctorAgendaPanelWidgetState extends State<DoctorAgendaPanelWidget>
             ),
       floatingActionButton: PopupMenuButton<String>(
         tooltip: isEs ? 'Acciones Rápidas' : 'Quick Actions',
-        offset: const Offset(0, -380),
+        offset: const Offset(0, -320),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         color: const Color(0xFF1E293B),
         onSelected: (val) async {
           if (val == 'urgencia') _mostrarDialogoNuevaCita(esEmergencia: true);
-          if (val == 'consultas') DoctorConsultasRealizadasWidget.open(context, idDoctor: widget.idDoctor);
           if (val == 'retraso') DoctorDelayBroadcastDialog.show(context, idDoctor: widget.idDoctor, onNotificado: _cargarDatos);
           if (val == 'receta' || val == 'orden' || val == 'reposo' || val == 'interconsulta') _abrirDocumentoModal(val);
-          if (val == 'actualizar') _cargarDatos();
-          if (val == 'soporte') DoctorSupportDialog.show(context, idDoctor: widget.idDoctor, doctorNombre: _doctorNombre ?? 'Doctor/a');
-          if (val == 'perfil') { await UserProfileModal.show(context, isDoctorView: true); _cargarDatos(); }
         },
         itemBuilder: (ctx) => [
-          _menuItem('consultas', Icons.assignment_turned_in_rounded, const Color(0xFF10B981), isEs ? 'Consultas & Borradores' : 'Consultations & Drafts', isEs ? 'Historial y notas pendientes' : 'History & pending drafts'),
           _menuItem('urgencia', Icons.emergency_rounded, const Color(0xFFE11D48), isEs ? 'Ingresar Urgencia' : 'Emergency Admission', isEs ? 'Atención directa' : 'Immediate care'),
           _menuItem('receta', Icons.description_rounded, const Color(0xFF10B981), isEs ? 'Receta / Ficha' : 'Prescription / Chart', isEs ? 'Emisión e impresión' : 'Issue and print'),
           _menuItem('orden', Icons.science_rounded, const Color(0xFF38BDF8), isEs ? 'Orden Médica' : 'Medical Order', isEs ? 'Lab y Rayos X' : 'Lab & Imaging'),
           _menuItem('reposo', Icons.hotel_rounded, const Color(0xFFA78BFA), isEs ? 'Reposo Médico' : 'Sick Leave', isEs ? 'Permiso o incapacidad' : 'Medical leave certificate'),
           _menuItem('interconsulta', Icons.alt_route_rounded, const Color(0xFF2DD4BF), isEs ? 'Interconsulta' : 'Referral', isEs ? 'Derivación médica' : 'Specialist referral'),
           _menuItem('retraso', Icons.campaign_rounded, const Color(0xFFF59E0B), isEs ? 'Avisar Retraso / Salida' : 'Broadcast Delay / Exit', isEs ? 'Notificar sala de espera' : 'Notify waiting room'),
-          const PopupMenuDivider(height: 8),
-          _menuItem('actualizar', Icons.refresh_rounded, const Color(0xFF94A3B8), isEs ? 'Actualizar Agenda' : 'Refresh Schedule', isEs ? 'Sincronizar turnos y estados' : 'Sync appointments & status'),
-          _menuItem('soporte', Icons.headset_mic_rounded, const Color(0xFF38BDF8), isEs ? 'Soporte y Ayuda' : 'Support & Help', isEs ? 'Asistencia técnica directa' : 'Direct technical support'),
-          _menuItem('perfil', Icons.person_outline_rounded, const Color(0xFFF472B6), isEs ? 'Mi Perfil Médico' : 'My Medical Profile', isEs ? 'Editar datos y credenciales' : 'Edit profile & credentials'),
         ],
         child: Container(
           height: 46,
@@ -490,6 +479,30 @@ class _DoctorAgendaPanelWidgetState extends State<DoctorAgendaPanelWidget>
           ),
         ),
       ),
+      bottomNavigationBar: MediaQuery.of(context).size.width >= 900
+          ? null
+          : BottomNavigationBar(
+              currentIndex: 0,
+              selectedItemColor: const Color(0xFF0284C7),
+              unselectedItemColor: const Color(0xFF64748B),
+              backgroundColor: Colors.white,
+              type: BottomNavigationBarType.fixed,
+              onTap: (idx) {
+                if (idx == 1) {
+                  DoctorConsultasRealizadasWidget.open(context, idDoctor: widget.idDoctor);
+                }
+              },
+              items: [
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.calendar_today_rounded),
+                  label: isEs ? 'Agenda' : 'Schedule',
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.assignment_turned_in_rounded),
+                  label: isEs ? 'Consultas' : 'Consultations',
+                ),
+              ],
+            ),
     );
   }
 
