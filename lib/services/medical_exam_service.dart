@@ -223,8 +223,26 @@ class MedicalExamService {
         'correo_familiar': correoFamiliar.trim().toLowerCase(),
     };
 
+    final client = DualDatabaseConfig.instance.patientClient;
+    Future<ExamenesMedicosRow> doInsert(Map<String, dynamic> payload) async {
+      final row = await client
+          .from('examenes_medicos')
+          .insert(payload)
+          .select()
+          .limit(1)
+          .maybeSingle();
+      if (row != null) {
+        return ExamenesMedicosRow(Map<String, dynamic>.from(row));
+      }
+      return ExamenesMedicosRow({
+        ...payload,
+        'id': timestamp.toString(),
+        'created_at': DateTime.now().toUtc().toIso8601String(),
+      });
+    }
+
     try {
-      return await ExamenesMedicosTable().insert(insertData);
+      return await doInsert(insertData);
     } catch (e) {
       final errStr = e.toString();
       if (errStr.contains('PGRST204') ||
@@ -233,7 +251,7 @@ class MedicalExamService {
         final fallbackData = Map<String, dynamic>.from(insertData)
           ..remove('compartir_con_paciente')
           ..remove('correo_familiar');
-        return await ExamenesMedicosTable().insert(fallbackData);
+        return await doInsert(fallbackData);
       }
       rethrow;
     }

@@ -124,11 +124,28 @@ class _PatientLatestExamsQuickCardState extends State<PatientLatestExamsQuickCar
     }
 
     try {
-      final res = await FilePicker.platform.pickFiles(type: FileType.any, withData: true);
-      if (res == null || res.files.isEmpty || res.files.first.bytes == null) return;
+      final res = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg', 'webp', 'dcm', 'dicom', 'doc', 'docx', 'txt'],
+        withData: true,
+      );
+      if (res == null || res.files.isEmpty) return;
       final file = res.files.first;
+      final bytes = file.bytes;
+      if (bytes == null || bytes.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('No se pudo leer el archivo seleccionado. Intenta nuevamente.'),
+            backgroundColor: Colors.red,
+          ));
+        }
+        return;
+      }
 
-      setState(() => _isUploading = true);
+      setState(() {
+        _isUploading = true;
+        _examenSeleccionado = titulo;
+      });
       final tipo = _detectarTipo(titulo);
       final currentUid = SupaFlow.client.auth.currentUser?.id;
 
@@ -139,17 +156,17 @@ class _PatientLatestExamsQuickCardState extends State<PatientLatestExamsQuickCar
         titulo: titulo,
         tipoExamen: tipo,
         fileName: file.name,
-        fileBytes: file.bytes!,
+        fileBytes: bytes,
         fechaEstudio: DateTime.now(),
         estadoInicial: 'por_revisar',
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('✅ Resultado de "$titulo" subido correctamente.'), backgroundColor: const Color(0xFF10B981)));
-        _cargarExamenes();
+        await _cargarExamenes();
       }
-    } catch (e) {
-      debugPrint('Error subiendo resultado de examen: $e');
+    } catch (e, st) {
+      debugPrint('Error subiendo resultado de examen: $e\n$st');
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al subir resultado: $e'), backgroundColor: Colors.red));
     } finally {
       if (mounted) setState(() => _isUploading = false);
@@ -263,17 +280,40 @@ class _PatientLatestExamsQuickCardState extends State<PatientLatestExamsQuickCar
             child: Row(children: [
               ...listaFiltrada.map((nombre) {
                 final esSel = _examenSeleccionado == nombre;
+                final tieneDoc = _ultimosExamenesPorTipo.any(
+                  (ex) => (ex.titulo ?? '').toLowerCase() == nombre.toLowerCase(),
+                );
                 return Padding(
                   padding: const EdgeInsets.only(right: 6),
                   child: FilterChip(
-                    selected: esSel,
+                    selected: esSel || tieneDoc,
+                    avatar: tieneDoc
+                        ? Icon(
+                            Icons.description_rounded,
+                            size: 14,
+                            color: esSel ? Colors.white : const Color(0xFF15803D),
+                          )
+                        : null,
                     label: Text(nombre),
-                    labelStyle: TextStyle(fontSize: 11, fontWeight: esSel ? FontWeight.bold : FontWeight.normal, color: esSel ? Colors.white : const Color(0xFF334155)),
-                    selectedColor: const Color(0xFF0284C7),
+                    labelStyle: TextStyle(
+                      fontSize: 11,
+                      fontWeight: (esSel || tieneDoc) ? FontWeight.bold : FontWeight.normal,
+                      color: esSel
+                          ? Colors.white
+                          : (tieneDoc ? const Color(0xFF15803D) : const Color(0xFF334155)),
+                    ),
+                    selectedColor: esSel ? const Color(0xFF0284C7) : const Color(0xFFDCFCE7),
                     backgroundColor: const Color(0xFFF1F5F9),
-                    checkmarkColor: Colors.white,
+                    checkmarkColor: esSel ? Colors.white : const Color(0xFF15803D),
                     padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: esSel ? const Color(0xFF0284C7) : const Color(0xFFCBD5E1))),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(
+                        color: esSel
+                            ? const Color(0xFF0284C7)
+                            : (tieneDoc ? const Color(0xFF86EFAC) : const Color(0xFFCBD5E1)),
+                      ),
+                    ),
                     onSelected: (sel) => setState(() => _examenSeleccionado = sel ? nombre : null),
                   ),
                 );
@@ -281,32 +321,58 @@ class _PatientLatestExamsQuickCardState extends State<PatientLatestExamsQuickCar
             ]),
           ),
           const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(color: const Color(0xFFF0FDF4), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFBBF7D0))),
-            child: Row(children: [
-              Icon(Icons.cloud_upload_outlined, size: 17, color: Colors.green.shade700),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  _examenSeleccionado != null ? '${isEs ? "Examen:" : "Exam:"} $_examenSeleccionado' : (isEs ? 'Selecciona un chip para subir resultado' : 'Select a chip to upload result'),
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.green.shade900),
-                  overflow: TextOverflow.ellipsis,
+          () {
+            final matchList = _examenSeleccionado == null
+                ? <ExamenesMedicosRow>[]
+                : _ultimosExamenesPorTipo
+                    .where((ex) => (ex.titulo ?? '').toLowerCase() == _examenSeleccionado!.toLowerCase())
+                    .toList();
+            final docSeleccionado = matchList.isNotEmpty ? matchList.first : null;
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(color: const Color(0xFFF0FDF4), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFBBF7D0))),
+              child: Row(children: [
+                Icon(Icons.cloud_upload_outlined, size: 17, color: Colors.green.shade700),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    _examenSeleccionado != null ? '${isEs ? "Examen:" : "Exam:"} $_examenSeleccionado' : (isEs ? 'Selecciona un chip para subir resultado' : 'Select a chip to upload result'),
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.green.shade900),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-              ElevatedButton.icon(
-                onPressed: _isUploading ? null : _subirResultadoDirecto,
-                icon: _isUploading
-                    ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Icon(Icons.file_upload_outlined, size: 14, color: Colors.white),
-                label: Text(
-                  isEs ? (_isUploading ? 'Subiendo...' : 'Subir Resultado') : (_isUploading ? 'Uploading...' : 'Upload'),
-                  style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Colors.white),
+                if (docSeleccionado != null) ...[
+                  OutlinedButton.icon(
+                    onPressed: () => MedicalExamViewerDialog.show(
+                      context,
+                      examen: docSeleccionado,
+                      paciente: widget.paciente,
+                      onActualizado: _cargarExamenes,
+                    ),
+                    icon: const Icon(Icons.visibility_rounded, size: 14, color: Color(0xFF0284C7)),
+                    label: Text(isEs ? 'Ver' : 'View', style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF0284C7))),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                      side: const BorderSide(color: Color(0xFF0284C7)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                ElevatedButton.icon(
+                  onPressed: _isUploading ? null : _subirResultadoDirecto,
+                  icon: _isUploading
+                      ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Icon(Icons.file_upload_outlined, size: 14, color: Colors.white),
+                  label: Text(
+                    isEs ? (_isUploading ? 'Subiendo...' : 'Subir Resultado') : (_isUploading ? 'Uploading...' : 'Upload'),
+                    style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A), padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)), elevation: 0),
                 ),
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A), padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)), elevation: 0),
-              ),
-            ]),
-          ),
+              ]),
+            );
+          }(),
           const SizedBox(height: 10),
           if (_isLoading)
             const Center(child: Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator()))
