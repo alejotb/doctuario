@@ -189,7 +189,19 @@ class _PatientLatestExamsQuickCardState extends State<PatientLatestExamsQuickCar
       }
       final List<dynamic> rows = await central.from('examenes_medicos').select().inFilter('id_paciente', pacienteIds).order('fecha_estudio', ascending: false);
       final todos = rows.map((r) => ExamenesMedicosRow(Map<String, dynamic>.from(r as Map))).toList();
-      final filtrados = MedicalExamService.filtrarUltimoPorCadaTipo(todos);
+      todos.sort((a, b) {
+        final fA = a.fechaEstudio ?? a.createdAt;
+        final fB = b.fechaEstudio ?? b.createdAt;
+        return fB.compareTo(fA);
+      });
+      final Map<String, ExamenesMedicosRow> porTitulo = {};
+      for (final ex in todos) {
+        final key = (ex.titulo ?? ex.tipoExamen ?? 'Estudio').trim().toLowerCase();
+        if (!porTitulo.containsKey(key)) {
+          porTitulo[key] = ex;
+        }
+      }
+      final filtrados = porTitulo.values.toList();
       if (mounted) setState(() { _ultimosExamenesPorTipo = filtrados; _isLoading = false; });
     } catch (e) {
       debugPrint('[PatientLatestExamsQuickCard] Error cargando exámenes: $e');
@@ -417,6 +429,8 @@ class _PatientLatestExamsQuickCardState extends State<PatientLatestExamsQuickCar
     final iconoTipo = _iconoParaTipo(tipo);
     final fechaStr = ex.fechaEstudio != null ? DateFormat('dd/MM/yyyy').format(ex.fechaEstudio!) : DateFormat('dd/MM/yyyy').format(ex.createdAt);
     final esRevisado = ex.estado == 'revisado';
+    final subidoPorDoctor = ex.subidoPorUsuarioId != null &&
+        (ex.subidoPorUsuarioId == ex.idDoctor || ex.subidoPorUsuarioId == widget.idDoctor);
 
     return InkWell(
       onTap: () => MedicalExamViewerDialog.show(context, examen: ex, paciente: widget.paciente, onActualizado: _cargarExamenes),
@@ -431,9 +445,23 @@ class _PatientLatestExamsQuickCardState extends State<PatientLatestExamsQuickCar
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(ex.titulo ?? 'Estudio Clínico', style: GoogleFonts.mooli(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)), overflow: TextOverflow.ellipsis),
               const SizedBox(height: 2),
-              Row(children: [
+              Wrap(spacing: 6, runSpacing: 2, crossAxisAlignment: WrapCrossAlignment.center, children: [
                 Container(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1), decoration: BoxDecoration(color: colorTipo.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)), child: Text(tipo, style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: colorTipo))),
-                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: subidoPorDoctor ? const Color(0xFFE0F2FE) : const Color(0xFFF3E8FF),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    subidoPorDoctor ? (isEs ? 'Por Doctor' : 'By Doctor') : (isEs ? 'Por Paciente' : 'By Patient'),
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: subidoPorDoctor ? const Color(0xFF0369A1) : const Color(0xFF7E22CE),
+                    ),
+                  ),
+                ),
                 Text('• $fechaStr', style: TextStyle(fontSize: 10.5, color: Colors.grey.shade500)),
               ]),
             ]),

@@ -63,14 +63,14 @@ class _DoctorAgendaPanelWidgetState extends State<DoctorAgendaPanelWidget>
     _cargarDatos();
     _suscribirRealtimeCitas();
     _autoSyncTimer = Timer.periodic(const Duration(seconds: 45), (_) {
-      if (mounted) _cargarDatos();
+      if (mounted) _cargarDatos(silent: true);
     });
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && mounted) {
-      _cargarDatos();
+      _cargarDatos(silent: true);
     }
   }
 
@@ -88,7 +88,7 @@ class _DoctorAgendaPanelWidgetState extends State<DoctorAgendaPanelWidget>
             value: widget.idDoctor,
           ),
           callback: (_) {
-            if (mounted) _cargarDatos();
+            if (mounted) _cargarDatos(silent: true);
           },
         )
         .subscribe();
@@ -142,8 +142,15 @@ class _DoctorAgendaPanelWidgetState extends State<DoctorAgendaPanelWidget>
             .compareTo(b.fechaHoraEstimadaActual ?? b.fechaHora ?? DateTime.now()));
 
       if (_citasDelDia.isNotEmpty) {
-        final enConsulta = _citasDelDia.where((c) => c.estado == 'en_consulta');
-        _seleccionarCita(enConsulta.isNotEmpty ? enConsulta.first : _citasDelDia.first, autoCargar: false);
+        final seleccionActual = _citaSeleccionada != null
+            ? _citasDelDia.where((c) => c.id == _citaSeleccionada!.id).toList()
+            : <CitasRow>[];
+        if (seleccionActual.isNotEmpty) {
+          _seleccionarCita(seleccionActual.first, autoCargar: false);
+        } else {
+          final enConsulta = _citasDelDia.where((c) => c.estado == 'en_consulta');
+          _seleccionarCita(enConsulta.isNotEmpty ? enConsulta.first : _citasDelDia.first, autoCargar: false);
+        }
       } else {
         _citaSeleccionada = null;
         _pacienteSeleccionado = null;
@@ -196,8 +203,10 @@ class _DoctorAgendaPanelWidgetState extends State<DoctorAgendaPanelWidget>
     } catch (_) {}
   }
 
-  Future<void> _cargarDatos() async {
-    setState(() => _isLoading = true);
+  Future<void> _cargarDatos({bool silent = false}) async {
+    if (!silent) {
+      setState(() => _isLoading = true);
+    }
     try {
       final currentUser = SupaFlow.client.auth.currentUser;
       final currentUid = currentUser?.id ?? '';
